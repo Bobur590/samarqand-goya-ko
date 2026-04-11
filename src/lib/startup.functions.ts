@@ -43,7 +43,8 @@ export const submitStartup = createServerFn({ method: "POST" })
     // AI Scoring
     try {
       const aiResult = await scoreStartupWithAI(data);
-      const totalScore = Object.values(aiResult.scores).reduce((a: number, b: number) => a + b, 0);
+      const scores = aiResult.scores as Record<string, number>;
+      const totalScore = Object.values(scores).reduce((a: number, b: number) => a + b, 0);
       
       let status = "rejected";
       if (totalScore >= 85) status = "top";
