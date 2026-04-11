@@ -14,7 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      startups: {
+        Row: {
+          ai_feedback: Json | null
+          author_email: string | null
+          author_name: string
+          author_phone: string
+          budget: string | null
+          category: string
+          created_at: string
+          id: string
+          problem: string
+          score: number | null
+          solution: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_feedback?: Json | null
+          author_email?: string | null
+          author_name: string
+          author_phone: string
+          budget?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          problem: string
+          score?: number | null
+          solution: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_feedback?: Json | null
+          author_email?: string | null
+          author_name?: string
+          author_phone?: string
+          budget?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          problem?: string
+          score?: number | null
+          solution?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
