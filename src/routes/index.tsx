@@ -41,7 +41,7 @@ function HeroSection() {
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl lg:text-6xl leading-[1.1]">
             G'oyangiz bor?
             <br />
-            <span className="text-primary">Hokimga yetkazamiz.</span>
+            <span className="text-primary">Platformaga yuboring.</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-lg leading-relaxed">
             G'oyangizni yuboring. Platforma AI yordamida baholaydi, saralaydi va faqat eng yaxshilarini hokimiyatga chiqaradi. Tanish-bilish kerak emas.
