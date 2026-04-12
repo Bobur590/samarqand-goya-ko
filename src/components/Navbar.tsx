@@ -1,16 +1,32 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Rocket, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Rocket, Menu, X, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSessionFn, logoutFn } from "@/lib/auth.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [session, setSession] = useState<{ authenticated: boolean; role: string | null; username: string | null }>({ authenticated: false, role: null, username: null });
+
+  const getSession = useServerFn(getSessionFn);
+  const logout = useServerFn(logoutFn);
+
+  useEffect(() => {
+    getSession().then(setSession).catch(() => {});
+  }, [location.pathname]);
+
+  const handleLogout = async () => {
+    await logout();
+    setSession({ authenticated: false, role: null, username: null });
+    navigate({ to: "/" });
+  };
 
   const navLinks = [
-    { to: "/", label: "Bosh sahifa" },
-    { to: "/submit", label: "G'oya yuborish" },
-    { to: "/about", label: "Qanday ishlaydi" },
+    { to: "/" as const, label: "Bosh sahifa" },
+    { to: "/about" as const, label: "Qanday ishlaydi" },
   ];
 
   return (
@@ -43,12 +59,37 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          <Link to="/admin">
-            <Button variant="outline" size="sm">Admin</Button>
-          </Link>
-          <Link to="/dashboard">
-            <Button variant="gold" size="sm">Hokimiyat</Button>
-          </Link>
+          {session.authenticated ? (
+            <>
+              <span className="text-xs text-muted-foreground mr-1">
+                {session.username} ({session.role})
+              </span>
+              {session.role === "admin" && (
+                <Link to="/admin">
+                  <Button variant="outline" size="sm">Admin Panel</Button>
+                </Link>
+              )}
+              {session.role === "user" && (
+                <Link to="/submit">
+                  <Button variant="outline" size="sm">G'oya yuborish</Button>
+                </Link>
+              )}
+              {session.role === "admin" && (
+                <Link to="/dashboard">
+                  <Button variant="gold" size="sm">Hokimiyat</Button>
+                </Link>
+              )}
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-1" /> Chiqish
+              </Button>
+            </>
+          ) : (
+            <Link to="/login">
+              <Button variant="default" size="sm">
+                <LogIn className="h-4 w-4 mr-1" /> Kirish
+              </Button>
+            </Link>
+          )}
         </div>
 
         <button
@@ -71,13 +112,33 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 flex gap-2">
-            <Link to="/admin" onClick={() => setMobileOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">Admin</Button>
-            </Link>
-            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-              <Button variant="gold" size="sm" className="w-full">Hokimiyat</Button>
-            </Link>
+          <div className="mt-2 flex flex-col gap-2">
+            {session.authenticated ? (
+              <>
+                <span className="text-xs text-muted-foreground px-3">
+                  {session.username} ({session.role})
+                </span>
+                {session.role === "admin" && (
+                  <Link to="/admin" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">Admin Panel</Button>
+                  </Link>
+                )}
+                {session.role === "user" && (
+                  <Link to="/submit" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">G'oya yuborish</Button>
+                  </Link>
+                )}
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                  <LogOut className="h-4 w-4 mr-1" /> Chiqish
+                </Button>
+              </>
+            ) : (
+              <Link to="/login" onClick={() => setMobileOpen(false)}>
+                <Button variant="default" size="sm" className="w-full">
+                  <LogIn className="h-4 w-4 mr-1" /> Kirish
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       )}
