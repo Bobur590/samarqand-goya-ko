@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const submitSchema = z.object({
   title: z.string().min(2).max(200),
@@ -15,14 +16,7 @@ const submitSchema = z.object({
 export const submitStartup = createServerFn({ method: "POST" })
   .inputValidator((input: z.infer<typeof submitSchema>) => submitSchema.parse(input))
   .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // Insert startup
-    const { data: startup, error } = await supabase
+    const { data: startup, error } = await supabaseAdmin
       .from("startups")
       .insert({
         title: data.title,
@@ -51,7 +45,7 @@ export const submitStartup = createServerFn({ method: "POST" })
       else if (totalScore >= 70) status = "approved";
       else if (totalScore >= 50) status = "scored";
 
-      await supabase
+      await supabaseAdmin
         .from("startups")
         .update({
           score: totalScore,
@@ -68,36 +62,24 @@ export const submitStartup = createServerFn({ method: "POST" })
 
 export const getAllStartups = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("startups")
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) throw new Error("Failed to fetch startups");
+    if (error) throw new Error("Failed to fetch startups: " + error.message);
     return data || [];
   });
 
 export const getTopStartups = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("startups")
       .select("*")
       .eq("status", "top")
       .order("score", { ascending: false });
 
-    if (error) throw new Error("Failed to fetch top startups");
+    if (error) throw new Error("Failed to fetch top startups: " + error.message);
     return data || [];
   });
 
