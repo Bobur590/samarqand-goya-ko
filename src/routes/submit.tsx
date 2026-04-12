@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SubmitForm } from "@/components/SubmitForm";
+import { getSessionFn } from "@/lib/auth.functions";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/submit")({
   component: SubmitPage,
@@ -14,6 +16,31 @@ export const Route = createFileRoute("/submit")({
 });
 
 function SubmitPage() {
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getSessionFn().then((s) => {
+      if (!s.authenticated) {
+        navigate({ to: "/login" });
+      } else {
+        setAuthorized(true);
+      }
+    });
+  }, []);
+
+  if (authorized === null) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">Tekshirilmoqda...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
