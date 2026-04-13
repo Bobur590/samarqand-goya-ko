@@ -30,14 +30,15 @@ function LoginPage() {
     setLoading(true);
     try {
       const result = await login({ data: { username, password } });
-      if (result.success) {
+      if ("success" in result && result.success === true) {
+        // Use window.location for hard redirect to ensure cookies are sent
         if (result.role === "admin") {
-          navigate({ to: "/admin" });
+          window.location.href = "/admin";
         } else {
-          navigate({ to: "/submit" });
+          window.location.href = "/submit";
         }
       } else {
-        setError(result.error || "Xatolik yuz berdi");
+        setError(("error" in result && result.error) ? String(result.error) : "Login yoki parol noto'g'ri");
       }
     } catch {
       setError("Xatolik yuz berdi");
@@ -87,6 +88,11 @@ function LoginPage() {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Kirilmoqda..." : "Kirish"}
               </Button>
+
+              <div className="text-xs text-muted-foreground text-center mt-3 space-y-1">
+                <p><strong>Admin:</strong> admin / adim123</p>
+                <p><strong>User:</strong> user / user123</p>
+              </div>
             </form>
           </div>
         </div>

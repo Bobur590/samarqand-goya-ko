@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { SubmitForm } from "@/components/SubmitForm";
@@ -17,15 +17,16 @@ export const Route = createFileRoute("/submit")({
 
 function SubmitPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     getSessionFn().then((s) => {
       if (!s.authenticated) {
-        navigate({ to: "/login" });
+        window.location.href = "/login";
       } else {
         setAuthorized(true);
       }
+    }).catch(() => {
+      window.location.href = "/login";
     });
   }, []);
 
