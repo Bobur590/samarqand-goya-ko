@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { AdminPanel } from "@/components/AdminPanel";
@@ -14,15 +14,16 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     getSessionFn().then((s) => {
       if (!s.authenticated || s.role !== "admin") {
-        navigate({ to: "/login" });
+        window.location.href = "/login";
       } else {
         setAuthorized(true);
       }
+    }).catch(() => {
+      window.location.href = "/login";
     });
   }, []);
 
