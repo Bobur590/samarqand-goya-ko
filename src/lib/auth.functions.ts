@@ -17,23 +17,25 @@ export const loginFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const user = USERS[data.username];
     if (!user || user.password !== data.password) {
-      return { success: false, error: "Login yoki parol noto'g'ri" } as const;
+      return { success: false as const, error: "Login yoki parol noto'g'ri" };
     }
 
     setCookie("auth_role", user.role, {
       httpOnly: true,
-      secure: true,
-      maxAge: 60 * 60 * 24, // 1 day
+      secure: false,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24,
       path: "/",
     });
     setCookie("auth_user", data.username, {
       httpOnly: false,
-      secure: true,
+      secure: false,
+      sameSite: "lax",
       maxAge: 60 * 60 * 24,
       path: "/",
     });
 
-    return { success: true, role: user.role, username: data.username } as const;
+    return { success: true as const, role: user.role, username: data.username };
   });
 
 export const logoutFn = createServerFn({ method: "POST" })
@@ -45,10 +47,14 @@ export const logoutFn = createServerFn({ method: "POST" })
 
 export const getSessionFn = createServerFn({ method: "GET" })
   .handler(async () => {
-    const role = getCookie("auth_role");
-    const username = getCookie("auth_user");
-    if (!role || !username) {
-      return { authenticated: false, role: null, username: null } as const;
+    try {
+      const role = getCookie("auth_role");
+      const username = getCookie("auth_user");
+      if (!role || !username) {
+        return { authenticated: false as const, role: null, username: null };
+      }
+      return { authenticated: true as const, role: role as "admin" | "user", username };
+    } catch {
+      return { authenticated: false as const, role: null, username: null };
     }
-    return { authenticated: true, role: role as "admin" | "user", username } as const;
   });
