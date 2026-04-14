@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { loginFn } from "@/lib/auth.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { LogIn } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -17,11 +18,11 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const { t } = useI18n();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const login = useServerFn(loginFn);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,17 +32,16 @@ function LoginPage() {
     try {
       const result = await login({ data: { username, password } });
       if ("success" in result && result.success === true) {
-        // Use window.location for hard redirect to ensure cookies are sent
         if (result.role === "admin") {
-          window.location.href = "/admin";
+          window.location.href = "/admin-dashboard";
         } else {
-          window.location.href = "/submit";
+          window.location.href = "/user-dashboard";
         }
       } else {
-        setError(("error" in result && result.error) ? String(result.error) : "Login yoki parol noto'g'ri");
+        setError(("error" in result && result.error) ? String(result.error) : t.loginError);
       }
     } catch {
-      setError("Xatolik yuz berdi");
+      setError(t.loginErrorGeneric);
     } finally {
       setLoading(false);
     }
@@ -55,42 +55,27 @@ function LoginPage() {
           <div className="rounded-xl border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <LogIn className="h-5 w-5 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">Tizimga kirish</h1>
+              <h1 className="text-xl font-bold text-foreground">{t.loginTitle}</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="username">Login</Label>
-                <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin yoki user"
-                  required
-                />
+                <Label htmlFor="username">{t.username}</Label>
+                <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="admin / user" required />
               </div>
               <div>
-                <Label htmlFor="password">Parol</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••"
-                  required
-                />
+                <Label htmlFor="password">{t.password}</Label>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" required />
               </div>
 
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-sm text-destructive">{error}</p>}
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Kirilmoqda..." : "Kirish"}
+                {loading ? t.loggingIn : t.loginButton}
               </Button>
 
               <div className="text-xs text-muted-foreground text-center mt-3 space-y-1">
-                <p><strong>Admin:</strong> admin / adim123</p>
+                <p><strong>Admin:</strong> admin / admin123</p>
                 <p><strong>User:</strong> user / user123</p>
               </div>
             </form>

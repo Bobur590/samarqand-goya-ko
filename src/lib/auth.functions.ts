@@ -3,7 +3,7 @@ import { getCookie, setCookie, deleteCookie } from "@tanstack/react-start/server
 import { z } from "zod";
 
 const USERS: Record<string, { password: string; role: "admin" | "user" }> = {
-  admin: { password: "adim123", role: "admin" },
+  admin: { password: "admin123", role: "admin" },
   user: { password: "user123", role: "user" },
 };
 

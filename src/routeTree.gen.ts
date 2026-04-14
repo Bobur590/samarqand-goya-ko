@@ -9,16 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SubmitRouteImport } from './routes/submit'
+import { Route as UserDashboardRouteImport } from './routes/user-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminDashboardRouteImport } from './routes/admin-dashboard'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
-const SubmitRoute = SubmitRouteImport.update({
-  id: '/submit',
-  path: '/submit',
+const UserDashboardRoute = UserDashboardRouteImport.update({
+  id: '/user-dashboard',
+  path: '/user-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -26,14 +25,9 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/admin-dashboard',
+  path: '/admin-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -50,59 +44,54 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin-dashboard': typeof AdminDashboardRoute
   '/login': typeof LoginRoute
-  '/submit': typeof SubmitRoute
+  '/user-dashboard': typeof UserDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin-dashboard': typeof AdminDashboardRoute
   '/login': typeof LoginRoute
-  '/submit': typeof SubmitRoute
+  '/user-dashboard': typeof UserDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
-  '/dashboard': typeof DashboardRoute
+  '/admin-dashboard': typeof AdminDashboardRoute
   '/login': typeof LoginRoute
-  '/submit': typeof SubmitRoute
+  '/user-dashboard': typeof UserDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/admin' | '/dashboard' | '/login' | '/submit'
+  fullPaths: '/' | '/about' | '/admin-dashboard' | '/login' | '/user-dashboard'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/admin' | '/dashboard' | '/login' | '/submit'
+  to: '/' | '/about' | '/admin-dashboard' | '/login' | '/user-dashboard'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/admin'
-    | '/dashboard'
+    | '/admin-dashboard'
     | '/login'
-    | '/submit'
+    | '/user-dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
-  DashboardRoute: typeof DashboardRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
   LoginRoute: typeof LoginRoute
-  SubmitRoute: typeof SubmitRoute
+  UserDashboardRoute: typeof UserDashboardRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/submit': {
-      id: '/submit'
-      path: '/submit'
-      fullPath: '/submit'
-      preLoaderRoute: typeof SubmitRouteImport
+    '/user-dashboard': {
+      id: '/user-dashboard'
+      path: '/user-dashboard'
+      fullPath: '/user-dashboard'
+      preLoaderRoute: typeof UserDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -112,18 +101,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/admin-dashboard': {
+      id: '/admin-dashboard'
+      path: '/admin-dashboard'
+      fullPath: '/admin-dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -146,10 +128,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
-  DashboardRoute: DashboardRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
   LoginRoute: LoginRoute,
-  SubmitRoute: SubmitRoute,
+  UserDashboardRoute: UserDashboardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

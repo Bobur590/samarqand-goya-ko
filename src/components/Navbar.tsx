@@ -1,15 +1,16 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Rocket, Menu, X, LogIn, LogOut } from "lucide-react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Rocket, Menu, X, LogIn, LogOut, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { getSessionFn, logoutFn } from "@/lib/auth.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useI18n } from "@/lib/i18n";
 
 export function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [session, setSession] = useState<{ authenticated: boolean; role: string | null; username: string | null }>({ authenticated: false, role: null, username: null });
+  const { t, lang, setLang } = useI18n();
 
   const getSession = useServerFn(getSessionFn);
   const logout = useServerFn(logoutFn);
@@ -21,12 +22,14 @@ export function Navbar() {
   const handleLogout = async () => {
     await logout();
     setSession({ authenticated: false, role: null, username: null });
-    navigate({ to: "/" });
+    window.location.href = "/";
   };
 
+  const toggleLang = () => setLang(lang === "uz" ? "ru" : "uz");
+
   const navLinks = [
-    { to: "/" as const, label: "Bosh sahifa" },
-    { to: "/about" as const, label: "Qanday ishlaydi" },
+    { to: "/" as const, label: t.home },
+    { to: "/about" as const, label: t.howItWorks },
   ];
 
   return (
@@ -59,43 +62,40 @@ export function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={toggleLang} className="gap-1">
+            <Globe className="h-4 w-4" />
+            {lang === "uz" ? "RU" : "UZ"}
+          </Button>
+
           {session.authenticated ? (
             <>
               <span className="text-xs text-muted-foreground mr-1">
                 {session.username} ({session.role})
               </span>
               {session.role === "admin" && (
-                <Link to="/admin">
-                  <Button variant="outline" size="sm">Admin Panel</Button>
+                <Link to="/admin-dashboard">
+                  <Button variant="outline" size="sm">{t.adminPanel}</Button>
                 </Link>
               )}
               {session.role === "user" && (
-                <Link to="/submit">
-                  <Button variant="outline" size="sm">G'oya yuborish</Button>
-                </Link>
-              )}
-              {session.role === "admin" && (
-                <Link to="/dashboard">
-                  <Button variant="gold" size="sm">Hokimiyat</Button>
+                <Link to="/user-dashboard">
+                  <Button variant="outline" size="sm">{t.submitIdea}</Button>
                 </Link>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-1" /> Chiqish
+                <LogOut className="h-4 w-4 mr-1" /> {t.logout}
               </Button>
             </>
           ) : (
             <Link to="/login">
               <Button variant="default" size="sm">
-                <LogIn className="h-4 w-4 mr-1" /> Kirish
+                <LogIn className="h-4 w-4 mr-1" /> {t.login}
               </Button>
             </Link>
           )}
         </div>
 
-        <button
-          className="md:hidden p-2 text-muted-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
+        <button className="md:hidden p-2 text-muted-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
@@ -113,29 +113,33 @@ export function Navbar() {
             </Link>
           ))}
           <div className="mt-2 flex flex-col gap-2">
+            <Button variant="ghost" size="sm" onClick={toggleLang} className="w-full justify-start gap-2">
+              <Globe className="h-4 w-4" />
+              {lang === "uz" ? "Русский" : "O'zbekcha"}
+            </Button>
             {session.authenticated ? (
               <>
                 <span className="text-xs text-muted-foreground px-3">
                   {session.username} ({session.role})
                 </span>
                 {session.role === "admin" && (
-                  <Link to="/admin" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">Admin Panel</Button>
+                  <Link to="/admin-dashboard" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">{t.adminPanel}</Button>
                   </Link>
                 )}
                 {session.role === "user" && (
-                  <Link to="/submit" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">G'oya yuborish</Button>
+                  <Link to="/user-dashboard" onClick={() => setMobileOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">{t.submitIdea}</Button>
                   </Link>
                 )}
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleLogout(); setMobileOpen(false); }}>
-                  <LogOut className="h-4 w-4 mr-1" /> Chiqish
+                  <LogOut className="h-4 w-4 mr-1" /> {t.logout}
                 </Button>
               </>
             ) : (
               <Link to="/login" onClick={() => setMobileOpen(false)}>
                 <Button variant="default" size="sm" className="w-full">
-                  <LogIn className="h-4 w-4 mr-1" /> Kirish
+                  <LogIn className="h-4 w-4 mr-1" /> {t.login}
                 </Button>
               </Link>
             )}
