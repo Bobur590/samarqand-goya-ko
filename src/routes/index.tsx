@@ -3,13 +3,14 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Rocket, Target, Brain, Trophy, ArrowRight, Shield, BarChart3 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
       { title: "Startup → Hokim | Samarqand innovatsion platforma" },
-      { name: "description", content: "Samarqand shahri uchun startup g'oyalarini baholash va hokimiyatga taqdim etish platformasi. G'oyangizni yuboring — AI baholasin." },
+      { name: "description", content: "Samarqand shahri uchun startup g'oyalarini baholash platformasi." },
     ],
   }),
 });
@@ -29,6 +30,7 @@ function Index() {
 }
 
 function HeroSection() {
+  const { t } = useI18n();
   return (
     <section className="relative overflow-hidden border-b bg-card">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,oklch(0.30_0.08_255/0.06),transparent_50%)]" />
@@ -36,26 +38,22 @@ function HeroSection() {
         <div className="max-w-2xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-accent/50 px-3 py-1 text-xs font-medium text-muted-foreground">
             <Rocket className="h-3 w-3" />
-            Samarqand shahri innovatsion platformasi
+            {t.heroTag}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl lg:text-6xl leading-[1.1]">
-            G'oyangiz bor?
+            {t.heroTitle1}
             <br />
-            <span className="text-primary">Platformaga yuboring.</span>
+            <span className="text-primary">{t.heroTitle2}</span>
           </h1>
-          <p className="mt-5 text-lg text-muted-foreground max-w-lg leading-relaxed">
-            G'oyangizni yuboring. Platforma AI yordamida baholaydi, saralaydi va faqat eng yaxshilarini hokimiyatga chiqaradi. Tanish-bilish kerak emas.
-          </p>
+          <p className="mt-5 text-lg text-muted-foreground max-w-lg leading-relaxed">{t.heroDesc}</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link to="/submit">
+            <Link to="/login">
               <Button variant="hero" size="xl">
-                G'oya yuborish <ArrowRight className="h-5 w-5 ml-1" />
+                {t.heroSubmit} <ArrowRight className="h-5 w-5 ml-1" />
               </Button>
             </Link>
             <Link to="/about">
-              <Button variant="outline" size="lg">
-                Qanday ishlaydi?
-              </Button>
+              <Button variant="outline" size="lg">{t.heroHow}</Button>
             </Link>
           </div>
         </div>
@@ -65,18 +63,18 @@ function HeroSection() {
 }
 
 function HowItWorksSection() {
+  const { t } = useI18n();
   const steps = [
-    { icon: Rocket, title: "G'oya yuboring", desc: "Startup g'oyangizni forma orqali tasvirlab bering" },
-    { icon: Brain, title: "AI baholaydi", desc: "Sun'iy intellekt 6 ta kriteriya bo'yicha ball beradi" },
-    { icon: Target, title: "Saralanadi", desc: "G'oyalar score bo'yicha avtomatik saralanadi" },
-    { icon: Trophy, title: "TOP chiqadi", desc: "85+ ball olgan g'oyalar hokimiyatga ko'rinadi" },
+    { icon: Rocket, title: t.step1Title, desc: t.step1Desc },
+    { icon: Brain, title: t.step2Title, desc: t.step2Desc },
+    { icon: Target, title: t.step3Title, desc: t.step3Desc },
+    { icon: Trophy, title: t.step4Title, desc: t.step4Desc },
   ];
 
   return (
     <section className="py-16 md:py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="text-2xl font-bold text-center text-foreground md:text-3xl">Qanday ishlaydi?</h2>
-        <p className="mt-2 text-center text-muted-foreground">4 oddiy qadam bilan g'oyangizni hokimiyatga yetkazing</p>
+        <h2 className="text-2xl font-bold text-center text-foreground md:text-3xl">{t.heroHow}</h2>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, i) => (
             <div key={i} className="group relative rounded-xl border bg-card p-6 transition-all hover:shadow-md hover:border-primary/20">
@@ -95,10 +93,11 @@ function HowItWorksSection() {
 }
 
 function StatsSection() {
+  const { t } = useI18n();
   const stats = [
-    { icon: Shield, value: "100%", label: "Shaffof baholash" },
-    { icon: Brain, value: "AI", label: "Avtomatik scoring" },
-    { icon: BarChart3, value: "6", label: "Baholash kriteriyasi" },
+    { icon: Shield, value: "100%", label: t.stat1 },
+    { icon: Brain, value: "AI", label: t.stat2 },
+    { icon: BarChart3, value: "6", label: t.stat3 },
   ];
 
   return (

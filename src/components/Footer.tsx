@@ -1,6 +1,8 @@
 import { Rocket } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export function Footer() {
+  const { t } = useI18n();
   return (
     <footer className="border-t bg-card py-8">
       <div className="mx-auto max-w-6xl px-4 flex flex-col items-center gap-3 text-center">
@@ -8,11 +10,8 @@ export function Footer() {
           <Rocket className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold text-foreground">Startup → Hokim</span>
         </div>
-        <p className="text-xs text-muted-foreground max-w-md">
-          Samarqand shahri hokimligi innovatsion g'oyalar platformasi.
-          Tanish-bilishsiz ham yaxshi g'oya tepaga chiqadi.
-        </p>
-        <p className="text-xs text-muted-foreground">© 2026 Startup → Hokim. Barcha huquqlar himoyalangan.</p>
+        <p className="text-xs text-muted-foreground max-w-md">{t.footerDesc}</p>
+        <p className="text-xs text-muted-foreground">{t.footerRights}</p>
       </div>
     </footer>
   );
