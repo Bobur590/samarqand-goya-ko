@@ -180,7 +180,7 @@ const translations = {
   },
 } as const;
 
-type Translations = typeof translations.uz;
+type Translations = (typeof translations)[Lang];
 
 interface I18nContextType {
   lang: Lang;
@@ -191,7 +191,7 @@ interface I18nContextType {
 const I18nContext = createContext<I18nContextType>({
   lang: "uz",
   setLang: () => {},
-  t: translations.uz,
+  t: translations.uz as Translations,
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
