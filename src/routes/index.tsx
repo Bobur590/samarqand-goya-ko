@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Rocket, Target, Brain, Trophy, ArrowRight, Shield, BarChart3 } from "lucide-react";
+import { Rocket, Target, Brain, Trophy, ArrowRight, Shield, BarChart3, UserPlus } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -41,15 +41,14 @@ function HeroSection() {
             {t.heroTag}
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl lg:text-6xl leading-[1.1]">
-            {t.heroTitle1}
-            <br />
+            {t.heroTitle1}<br />
             <span className="text-primary">{t.heroTitle2}</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-lg leading-relaxed">{t.heroDesc}</p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link to="/login">
               <Button variant="hero" size="xl">
-                {t.heroSubmit} <ArrowRight className="h-5 w-5 ml-1" />
+                <UserPlus className="h-5 w-5 mr-1" /> {t.heroSubmit} <ArrowRight className="h-5 w-5 ml-1" />
               </Button>
             </Link>
             <Link to="/about">
@@ -65,9 +64,9 @@ function HeroSection() {
 function HowItWorksSection() {
   const { t } = useI18n();
   const steps = [
-    { icon: Rocket, title: t.step1Title, desc: t.step1Desc },
-    { icon: Brain, title: t.step2Title, desc: t.step2Desc },
-    { icon: Target, title: t.step3Title, desc: t.step3Desc },
+    { icon: UserPlus, title: t.step1Title, desc: t.step1Desc },
+    { icon: Rocket, title: t.step2Title, desc: t.step2Desc },
+    { icon: Brain, title: t.step3Title, desc: t.step3Desc },
     { icon: Trophy, title: t.step4Title, desc: t.step4Desc },
   ];
 
