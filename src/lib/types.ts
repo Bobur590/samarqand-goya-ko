@@ -8,6 +8,7 @@ export interface StartupSubmission {
   author_name: string;
   author_phone: string;
   author_email: string | null;
+  pdf_url: string | null;
   score: number | null;
   status: "pending" | "scored" | "rejected" | "approved" | "top";
   ai_feedback: AiFeedback | null;

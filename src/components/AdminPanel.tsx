@@ -84,6 +84,11 @@ export function AdminPanel() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-foreground truncate">{s.title}</h3>
                   <span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">{s.category}</span>
+                  {s.pdf_url && (
+                    <a href={s.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline" onClick={(e) => e.stopPropagation()}>
+                      📄 PDF
+                    </a>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5 truncate">{s.problem}</p>
                 <p className="text-xs text-muted-foreground mt-1">{s.author_name} • {new Date(s.created_at).toLocaleDateString("uz")}</p>

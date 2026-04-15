@@ -2,8 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { SCORE_CRITERIA } from "@/lib/types";
 import type { StartupSubmission } from "@/lib/types";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, FileText } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   startup: StartupSubmission;
@@ -24,6 +25,13 @@ export function StartupDetailDialog({ startup, onClose }: Props) {
           <div>
             <div className="text-xs text-muted-foreground mb-1">Kategoriya: {startup.category}</div>
             <div className="text-xs text-muted-foreground">Muallif: {startup.author_name} | {startup.author_phone}</div>
+            {startup.pdf_url && (
+              <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex">
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <FileText className="h-3.5 w-3.5" /> PDF faylni ko'rish
+                </Button>
+              </a>
+            )}
           </div>
 
           {startup.score !== null && (

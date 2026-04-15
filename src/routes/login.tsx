@@ -75,7 +75,7 @@ function LoginPage() {
               </Button>
 
               <div className="text-xs text-muted-foreground text-center mt-3 space-y-1">
-                <p><strong>Admin:</strong> admin / admin123</p>
+                <p><strong>Admin:</strong> admin / hokim2026!</p>
                 <p><strong>User:</strong> user / user123</p>
               </div>
             </form>
