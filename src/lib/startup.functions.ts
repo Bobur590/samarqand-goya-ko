@@ -12,6 +12,15 @@ const submitSchema = z.object({
   author_phone: z.string().min(5).max(20),
   author_email: z.string().max(255),
   pdf_url: z.string().max(1000).optional(),
+  user_id: z.string().uuid().optional(),
+  founder_name: z.string().max(200).optional(),
+  region: z.string().max(100).optional(),
+  business_model: z.string().max(2000).optional(),
+  target_audience: z.string().max(1000).optional(),
+  current_stage: z.string().max(100).optional(),
+  team_info: z.string().max(1000).optional(),
+  investment_needed: z.string().max(200).optional(),
+  additional_notes: z.string().max(2000).optional(),
 });
 
 export const submitStartup = createServerFn({ method: "POST" })
@@ -29,6 +38,15 @@ export const submitStartup = createServerFn({ method: "POST" })
         author_phone: data.author_phone,
         author_email: data.author_email || null,
         pdf_url: data.pdf_url || null,
+        user_id: data.user_id || null,
+        founder_name: data.founder_name || null,
+        region: data.region || null,
+        business_model: data.business_model || null,
+        target_audience: data.target_audience || null,
+        current_stage: data.current_stage || null,
+        team_info: data.team_info || null,
+        investment_needed: data.investment_needed || null,
+        additional_notes: data.additional_notes || null,
         status: "pending",
       })
       .select()
@@ -41,19 +59,15 @@ export const submitStartup = createServerFn({ method: "POST" })
       const aiResult = await scoreStartupWithAI(data);
       const scores = aiResult.scores as Record<string, number>;
       const totalScore = Object.values(scores).reduce((a: number, b: number) => a + b, 0);
-      
+
       let status = "rejected";
-      if (totalScore >= 85) status = "top";
-      else if (totalScore >= 70) status = "approved";
-      else if (totalScore >= 50) status = "scored";
+      if (totalScore >= 85) status = "approved";
+      else if (totalScore >= 70) status = "under_review";
+      else if (totalScore >= 50) status = "pending";
 
       await supabaseAdmin
         .from("startups")
-        .update({
-          score: totalScore,
-          status,
-          ai_feedback: aiResult,
-        })
+        .update({ score: totalScore, status, ai_feedback: aiResult })
         .eq("id", startup.id);
     } catch (e) {
       console.error("AI scoring failed:", e);
@@ -68,9 +82,20 @@ export const getAllStartups = createServerFn({ method: "GET" })
       .from("startups")
       .select("*")
       .order("created_at", { ascending: false });
-
     if (error) throw new Error("Failed to fetch startups: " + error.message);
     return data || [];
+  });
+
+export const getUserStartups = createServerFn({ method: "POST" })
+  .inputValidator((input: { userId: string }) => input)
+  .handler(async ({ data }) => {
+    const { data: startups, error } = await supabaseAdmin
+      .from("startups")
+      .select("*")
+      .eq("user_id", data.userId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error("Failed to fetch user startups: " + error.message);
+    return startups || [];
   });
 
 export const getTopStartups = createServerFn({ method: "GET" })
@@ -78,11 +103,89 @@ export const getTopStartups = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("startups")
       .select("*")
-      .eq("status", "top")
+      .eq("status", "approved")
       .order("score", { ascending: false });
-
     if (error) throw new Error("Failed to fetch top startups: " + error.message);
     return data || [];
+  });
+
+export const updateStartupStatus = createServerFn({ method: "POST" })
+  .inputValidator((input: { startupId: string; status: string }) => input)
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("startups")
+      .update({ status: data.status })
+      .eq("id", data.startupId);
+    if (error) throw new Error("Failed to update status: " + error.message);
+    return { success: true };
+  });
+
+export const addAdminNote = createServerFn({ method: "POST" })
+  .inputValidator((input: { startupId: string; note: string; adminUsername: string }) => input)
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin
+      .from("admin_notes")
+      .insert({ startup_id: data.startupId, note: data.note, admin_username: data.adminUsername });
+    if (error) throw new Error("Failed to add note: " + error.message);
+    return { success: true };
+  });
+
+export const getAdminNotes = createServerFn({ method: "POST" })
+  .inputValidator((input: { startupId: string }) => input)
+  .handler(async ({ data }) => {
+    const { data: notes, error } = await supabaseAdmin
+      .from("admin_notes")
+      .select("*")
+      .eq("startup_id", data.startupId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error("Failed to fetch notes: " + error.message);
+    return notes || [];
+  });
+
+export const saveDocument = createServerFn({ method: "POST" })
+  .inputValidator((input: { startupId: string; fileName: string; fileUrl: string; fileSize: number; documentType: string }) => input)
+  .handler(async ({ data }) => {
+    const { error } = await supabaseAdmin.from("startup_documents").insert({
+      startup_id: data.startupId,
+      file_name: data.fileName,
+      file_url: data.fileUrl,
+      file_size: data.fileSize,
+      document_type: data.documentType,
+      file_type: "pdf",
+    });
+    if (error) throw new Error("Failed to save document: " + error.message);
+    return { success: true };
+  });
+
+export const getStartupDocuments = createServerFn({ method: "POST" })
+  .inputValidator((input: { startupId: string }) => input)
+  .handler(async ({ data }) => {
+    const { data: docs, error } = await supabaseAdmin
+      .from("startup_documents")
+      .select("*")
+      .eq("startup_id", data.startupId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error("Failed to fetch documents: " + error.message);
+    return docs || [];
+  });
+
+export const getDashboardStats = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { data: startups } = await supabaseAdmin.from("startups").select("status, score");
+    const { data: users } = await supabaseAdmin.from("app_users").select("id").eq("role", "user");
+    const { data: docs } = await supabaseAdmin.from("startup_documents").select("id");
+
+    const all = startups || [];
+    return {
+      totalUsers: users?.length || 0,
+      totalStartups: all.length,
+      pending: all.filter((s) => s.status === "pending").length,
+      underReview: all.filter((s) => s.status === "under_review").length,
+      approved: all.filter((s) => s.status === "approved").length,
+      rejected: all.filter((s) => s.status === "rejected").length,
+      needsRevision: all.filter((s) => s.status === "needs_revision").length,
+      totalDocuments: docs?.length || 0,
+    };
   });
 
 async function scoreStartupWithAI(input: { title: string; problem: string; solution: string; budget: string; category: string }) {
@@ -129,12 +232,12 @@ Kriteriyalar:
                 scores: {
                   type: "object",
                   properties: {
-                    problem_clarity: { type: "number", description: "0-20 ball" },
-                    solution_realism: { type: "number", description: "0-20 ball" },
-                    revenue_model: { type: "number", description: "0-15 ball" },
-                    scalability: { type: "number", description: "0-15 ball" },
-                    regional_benefit: { type: "number", description: "0-15 ball" },
-                    clarity: { type: "number", description: "0-15 ball" },
+                    problem_clarity: { type: "number" },
+                    solution_realism: { type: "number" },
+                    revenue_model: { type: "number" },
+                    scalability: { type: "number" },
+                    regional_benefit: { type: "number" },
+                    clarity: { type: "number" },
                   },
                   required: ["problem_clarity", "solution_realism", "revenue_model", "scalability", "regional_benefit", "clarity"],
                 },
@@ -150,9 +253,9 @@ Kriteriyalar:
                   },
                   required: ["problem_clarity", "solution_realism", "revenue_model", "scalability", "regional_benefit", "clarity"],
                 },
-                strengths: { type: "array", items: { type: "string" }, description: "2-4 kuchli tomon" },
-                weaknesses: { type: "array", items: { type: "string" }, description: "2-4 kuchsiz tomon" },
-                verdict: { type: "string", description: "Yakuniy xulosa" },
+                strengths: { type: "array", items: { type: "string" } },
+                weaknesses: { type: "array", items: { type: "string" } },
+                verdict: { type: "string" },
               },
               required: ["summary", "scores", "explanations", "strengths", "weaknesses", "verdict"],
               additionalProperties: false,
@@ -177,8 +280,5 @@ Kriteriyalar:
   const parsed = JSON.parse(toolCall.function.arguments);
   const totalScore = Object.values(parsed.scores as Record<string, number>).reduce((a, b) => a + b, 0);
 
-  return {
-    ...parsed,
-    total_score: totalScore,
-  };
+  return { ...parsed, total_score: totalScore };
 }

@@ -3,17 +3,26 @@ export interface StartupSubmission {
   title: string;
   problem: string;
   solution: string;
-  budget: string;
+  budget: string | null;
   category: string;
   author_name: string;
   author_phone: string;
   author_email: string | null;
   pdf_url: string | null;
   score: number | null;
-  status: "pending" | "scored" | "rejected" | "approved" | "top";
+  status: string;
   ai_feedback: AiFeedback | null;
   created_at: string;
   updated_at: string;
+  user_id: string | null;
+  founder_name: string | null;
+  region: string | null;
+  business_model: string | null;
+  target_audience: string | null;
+  current_stage: string | null;
+  team_info: string | null;
+  investment_needed: string | null;
+  additional_notes: string | null;
 }
 
 export interface AiFeedback {
@@ -40,6 +49,36 @@ export interface AiFeedback {
   total_score: number;
 }
 
+export interface StartupDocument {
+  id: string;
+  startup_id: string;
+  file_name: string;
+  file_url: string;
+  file_type: string | null;
+  file_size: number | null;
+  document_type: string;
+  created_at: string;
+}
+
+export interface AdminNote {
+  id: string;
+  startup_id: string;
+  admin_username: string;
+  note: string;
+  created_at: string;
+}
+
+export interface AppUser {
+  id: string;
+  username: string;
+  full_name: string;
+  phone: string | null;
+  email: string | null;
+  region: string | null;
+  role: string;
+  created_at: string;
+}
+
 export const CATEGORIES = [
   "IT va Texnologiya",
   "Qishloq xo'jaligi",
@@ -51,6 +90,22 @@ export const CATEGORIES = [
   "Xizmat ko'rsatish",
   "Energetika",
   "Boshqa",
+] as const;
+
+export const STATUSES = [
+  "pending",
+  "under_review",
+  "approved",
+  "rejected",
+  "needs_revision",
+] as const;
+
+export const STAGES = [
+  "Idea",
+  "MVP",
+  "Beta",
+  "Growth",
+  "Scaling",
 ] as const;
 
 export const SCORE_CRITERIA = [
