@@ -24,6 +24,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          pdf_url: string | null
           problem: string
           score: number | null
           solution: string
@@ -40,6 +41,7 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          pdf_url?: string | null
           problem: string
           score?: number | null
           solution: string
@@ -56,6 +58,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          pdf_url?: string | null
           problem?: string
           score?: number | null
           solution?: string
