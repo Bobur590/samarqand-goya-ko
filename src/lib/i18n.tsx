@@ -1,30 +1,60 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 export type Lang = "uz" | "ru";
 
 const translations = {
   uz: {
-    // Nav
     home: "Bosh sahifa",
     howItWorks: "Qanday ishlaydi",
     login: "Kirish",
     logout: "Chiqish",
+    register: "Ro'yxatdan o'tish",
     adminPanel: "Admin Panel",
     submitIdea: "G'oya yuborish",
     userDashboard: "Mening panelim",
     adminDashboard: "Admin panel",
     language: "Til",
 
-    // Login
+    // Auth
     loginTitle: "Tizimga kirish",
+    registerTitle: "Ro'yxatdan o'tish",
     username: "Login",
     password: "Parol",
+    confirmPassword: "Parolni tasdiqlang",
+    fullName: "To'liq ism",
+    phone: "Telefon raqam",
+    email: "Email",
+    emailOptional: "Email (ixtiyoriy)",
+    regionField: "Viloyat / Shahar",
     loginButton: "Kirish",
+    registerButton: "Ro'yxatdan o'tish",
     loggingIn: "Kirilmoqda...",
+    registering: "Ro'yxatdan o'tilmoqda...",
     loginError: "Login yoki parol noto'g'ri",
     loginErrorGeneric: "Xatolik yuz berdi",
+    usernameTaken: "Bu login allaqachon band",
+    emailTaken: "Bu email allaqachon ro'yxatdan o'tgan",
+    registerFailed: "Ro'yxatdan o'tishda xatolik",
+    passwordMismatch: "Parollar mos kelmaydi",
+    haveAccount: "Hisobingiz bormi?",
+    noAccount: "Hisobingiz yo'qmi?",
+    adminLoginNote: "Admin kirish: superadmin",
 
-    // User dashboard
+    // User Dashboard
+    welcome: "Xush kelibsiz",
+    dashboardTab: "Dashboard",
+    submitTab: "Startup yuborish",
+    myStartups: "Mening startaplarim",
+    profileTab: "Profil",
+    totalSubmitted: "Yuborilgan",
+    pendingReview: "Ko'rib chiqilmoqda",
+    approvedCount: "Tasdiqlangan",
+    rejectedCount: "Rad etilgan",
+    quickSubmit: "Yangi startup yuborish",
+    noSubmissions: "Hali startup yubormadingiz",
+    submitFirst: "Birinchi startapingizni yuboring!",
+
+    // Submit Form
     userDashboardTitle: "Startup g'oyangizni yuboring",
     userDashboardDesc: "Barcha maydonlarni to'ldiring. AI tizim g'oyangizni baholaydi.",
     startupName: "Startup nomi",
@@ -36,10 +66,19 @@ const translations = {
     solutionPlaceholder: "Muammoni qanday hal qilasiz?",
     budget: "Kerakli byudjet (so'm)",
     budgetPlaceholder: "Masalan: 50,000,000",
+    founderName: "Asoschining ismi",
+    businessModel: "Biznes modeli",
+    businessModelPlaceholder: "Qanday pul ishlaysiz?",
+    targetAudience: "Maqsadli auditoriya",
+    targetAudiencePlaceholder: "Kim uchun?",
+    currentStage: "Hozirgi bosqich",
+    selectStage: "Bosqichni tanlang",
+    teamInfo: "Jamoa haqida",
+    teamInfoPlaceholder: "Jamoa a'zolari va tajribalari",
+    investmentNeeded: "Kerakli investitsiya",
+    investmentPlaceholder: "Masalan: $50,000",
+    additionalNotes: "Qo'shimcha izoh",
     contactInfo: "Aloqa ma'lumotlari",
-    fullName: "Ismingiz",
-    phone: "Telefon raqam",
-    email: "Email (ixtiyoriy)",
     submit: "G'oyani yuborish",
     submitting: "AI baholash jarayonida...",
     submitSuccess: "G'oyangiz qabul qilindi!",
@@ -49,6 +88,24 @@ const translations = {
     submitError: "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
     ideaSubmitted: "G'oyangiz muvaffaqiyatli yuborildi!",
     aboutIdea: "G'oya haqida",
+    pdfUpload: "PDF yuklash",
+    pdfUploadDesc: "Taqdimot, biznes-reja yoki pitch-deck",
+    pdfOnly: "Faqat PDF fayl yuklash mumkin",
+    pdfTooLarge: "Fayl hajmi 10MB dan oshmasligi kerak",
+    uploadError: "Fayl yuklashda xatolik",
+    maxFileSize: "Maksimum 10MB",
+
+    // Statuses
+    pending: "Ko'rib chiqilmoqda",
+    under_review: "Tahlil qilinmoqda",
+    approved: "Tasdiqlangan",
+    rejected: "Rad etilgan",
+    needs_revision: "Qayta ishlash kerak",
+    statusPending: "Ko'rib chiqilmoqda",
+    statusUnderReview: "Tahlil qilinmoqda",
+    statusApproved: "Tasdiqlangan",
+    statusRejected: "Rad etilgan",
+    statusNeedsRevision: "Qayta ishlash kerak",
 
     // Admin
     adminTitle: "Admin Panel",
@@ -56,15 +113,36 @@ const translations = {
     search: "Qidirish...",
     allCategories: "Barcha kategoriyalar",
     allStatuses: "Barchasi",
-    pending: "Kutilmoqda",
-    scored: "Baholangan",
     top: "TOP",
-    rejected: "Rad etilgan",
     total: "Jami",
     ideas: "ta g'oya",
     loading: "Yuklanmoqda...",
     noIdeas: "Hali g'oyalar yo'q",
     checking: "Tekshirilmoqda...",
+    allStartups: "Barcha g'oyalar",
+    topStartups: "TOP loyihalar",
+    statistics: "Statistika",
+    usersTab: "Foydalanuvchilar",
+    changeStatus: "Statusni o'zgartirish",
+    addNote: "Izoh qo'shish",
+    adminNotes: "Admin izohlari",
+    noteText: "Izoh matni",
+    saveNote: "Saqlash",
+    viewDetails: "Batafsil",
+    viewPdf: "PDF ko'rish",
+    documents: "Hujjatlar",
+    noDocuments: "Hujjatlar yo'q",
+    totalUsers: "Foydalanuvchilar",
+    totalStartups: "Startaplar",
+    pendingReviews: "Kutilmoqda",
+    approvedStartups: "Tasdiqlangan",
+    rejectedStartups: "Rad etilgan",
+    uploadedDocs: "Yuklangan PDF",
+    startupDetails: "Startup tafsilotlari",
+    founderInfo: "Asoschining ma'lumotlari",
+    submissionDate: "Yuborilgan sana",
+    userStartups: "Startaplari",
+    noNotes: "Izohlar yo'q",
 
     // Home
     heroTag: "Samarqand shahri innovatsion platformasi",
@@ -73,32 +151,31 @@ const translations = {
     heroDesc: "G'oyangizni yuboring. Platforma AI yordamida baholaydi, saralaydi va faqat eng yaxshilarini hokimiyatga chiqaradi.",
     heroSubmit: "G'oya yuborish",
     heroHow: "Qanday ishlaydi?",
-    step1Title: "G'oya yuboring",
-    step1Desc: "Startup g'oyangizni forma orqali tasvirlab bering",
-    step2Title: "AI baholaydi",
-    step2Desc: "Sun'iy intellekt 6 ta kriteriya bo'yicha ball beradi",
-    step3Title: "Saralanadi",
-    step3Desc: "G'oyalar score bo'yicha avtomatik saralanadi",
-    step4Title: "TOP chiqadi",
-    step4Desc: "85+ ball olgan g'oyalar hokimiyatga ko'rinadi",
+    step1Title: "Ro'yxatdan o'ting",
+    step1Desc: "Platformada hisob oching va tizimga kiring",
+    step2Title: "G'oya yuboring",
+    step2Desc: "Startup g'oyangizni forma orqali tasvirlab bering",
+    step3Title: "AI baholaydi",
+    step3Desc: "Sun'iy intellekt 6 ta kriteriya bo'yicha ball beradi",
+    step4Title: "Natijani kuting",
+    step4Desc: "Hokimiyat eng yaxshi g'oyalarni ko'rib chiqadi",
     stat1: "Shaffof baholash",
     stat2: "Avtomatik scoring",
     stat3: "Baholash kriteriyasi",
 
-    // Footer
     footerDesc: "Samarqand shahri hokimligi innovatsion g'oyalar platformasi.",
     footerRights: "© 2026 Startup → Hokim. Barcha huquqlar himoyalangan.",
 
-    // Admin sidebar
-    allStartups: "Barcha g'oyalar",
-    topStartups: "TOP loyihalar",
-    statistics: "Statistika",
+    profileSaved: "Profil saqlandi",
+    saveProfile: "Saqlash",
+    saving: "Saqlanmoqda...",
   },
   ru: {
     home: "Главная",
     howItWorks: "Как работает",
     login: "Войти",
     logout: "Выйти",
+    register: "Регистрация",
     adminPanel: "Админ панель",
     submitIdea: "Подать идею",
     userDashboard: "Мой кабинет",
@@ -106,12 +183,41 @@ const translations = {
     language: "Язык",
 
     loginTitle: "Вход в систему",
+    registerTitle: "Регистрация",
     username: "Логин",
     password: "Пароль",
+    confirmPassword: "Подтвердите пароль",
+    fullName: "Полное имя",
+    phone: "Номер телефона",
+    email: "Email",
+    emailOptional: "Email (необязательно)",
+    regionField: "Регион / Город",
     loginButton: "Войти",
+    registerButton: "Зарегистрироваться",
     loggingIn: "Вход...",
+    registering: "Регистрация...",
     loginError: "Логин или пароль неверный",
     loginErrorGeneric: "Произошла ошибка",
+    usernameTaken: "Этот логин уже занят",
+    emailTaken: "Этот email уже зарегистрирован",
+    registerFailed: "Ошибка при регистрации",
+    passwordMismatch: "Пароли не совпадают",
+    haveAccount: "Уже есть аккаунт?",
+    noAccount: "Нет аккаунта?",
+    adminLoginNote: "Вход для админа: superadmin",
+
+    welcome: "Добро пожаловать",
+    dashboardTab: "Главная",
+    submitTab: "Подать стартап",
+    myStartups: "Мои стартапы",
+    profileTab: "Профиль",
+    totalSubmitted: "Отправлено",
+    pendingReview: "На рассмотрении",
+    approvedCount: "Одобрено",
+    rejectedCount: "Отклонено",
+    quickSubmit: "Подать новый стартап",
+    noSubmissions: "Вы ещё не подавали стартапы",
+    submitFirst: "Подайте свой первый стартап!",
 
     userDashboardTitle: "Подайте свою стартап-идею",
     userDashboardDesc: "Заполните все поля. AI система оценит вашу идею.",
@@ -124,10 +230,19 @@ const translations = {
     solutionPlaceholder: "Как вы решаете проблему?",
     budget: "Необходимый бюджет (сум)",
     budgetPlaceholder: "Например: 50,000,000",
+    founderName: "Имя основателя",
+    businessModel: "Бизнес-модель",
+    businessModelPlaceholder: "Как вы зарабатываете?",
+    targetAudience: "Целевая аудитория",
+    targetAudiencePlaceholder: "Для кого?",
+    currentStage: "Текущий этап",
+    selectStage: "Выберите этап",
+    teamInfo: "О команде",
+    teamInfoPlaceholder: "Члены команды и опыт",
+    investmentNeeded: "Необходимые инвестиции",
+    investmentPlaceholder: "Например: $50,000",
+    additionalNotes: "Дополнительные заметки",
     contactInfo: "Контактная информация",
-    fullName: "Ваше имя",
-    phone: "Номер телефона",
-    email: "Email (необязательно)",
     submit: "Отправить идею",
     submitting: "AI оценивает...",
     submitSuccess: "Ваша идея принята!",
@@ -137,21 +252,59 @@ const translations = {
     submitError: "Произошла ошибка. Попробуйте ещё раз.",
     ideaSubmitted: "Ваша идея успешно отправлена!",
     aboutIdea: "Об идее",
+    pdfUpload: "Загрузить PDF",
+    pdfUploadDesc: "Презентация, бизнес-план или питч-дек",
+    pdfOnly: "Только PDF файлы",
+    pdfTooLarge: "Размер файла не должен превышать 10МБ",
+    uploadError: "Ошибка загрузки файла",
+    maxFileSize: "Максимум 10МБ",
+
+    pending: "На рассмотрении",
+    under_review: "Анализируется",
+    approved: "Одобрено",
+    rejected: "Отклонено",
+    needs_revision: "Нужна доработка",
+    statusPending: "На рассмотрении",
+    statusUnderReview: "Анализируется",
+    statusApproved: "Одобрено",
+    statusRejected: "Отклонено",
+    statusNeedsRevision: "Нужна доработка",
 
     adminTitle: "Админ панель",
     adminDesc: "Просматривайте и управляйте стартап-идеями",
     search: "Поиск...",
     allCategories: "Все категории",
     allStatuses: "Все",
-    pending: "Ожидает",
-    scored: "Оценено",
     top: "ТОП",
-    rejected: "Отклонено",
     total: "Всего",
     ideas: "идей",
     loading: "Загрузка...",
     noIdeas: "Пока нет идей",
     checking: "Проверка...",
+    allStartups: "Все идеи",
+    topStartups: "ТОП проекты",
+    statistics: "Статистика",
+    usersTab: "Пользователи",
+    changeStatus: "Изменить статус",
+    addNote: "Добавить заметку",
+    adminNotes: "Заметки админа",
+    noteText: "Текст заметки",
+    saveNote: "Сохранить",
+    viewDetails: "Подробнее",
+    viewPdf: "Открыть PDF",
+    documents: "Документы",
+    noDocuments: "Нет документов",
+    totalUsers: "Пользователи",
+    totalStartups: "Стартапы",
+    pendingReviews: "Ожидают",
+    approvedStartups: "Одобрено",
+    rejectedStartups: "Отклонено",
+    uploadedDocs: "Загружено PDF",
+    startupDetails: "Детали стартапа",
+    founderInfo: "Данные основателя",
+    submissionDate: "Дата подачи",
+    userStartups: "Стартапы",
+    noNotes: "Нет заметок",
 
     heroTag: "Инновационная платформа города Самарканд",
     heroTitle1: "Есть идея?",
@@ -159,14 +312,14 @@ const translations = {
     heroDesc: "Отправьте свою идею. Платформа оценит её с помощью AI, отберёт лучшие и представит руководству.",
     heroSubmit: "Подать идею",
     heroHow: "Как работает?",
-    step1Title: "Подайте идею",
-    step1Desc: "Опишите свою стартап-идею через форму",
-    step2Title: "AI оценивает",
-    step2Desc: "ИИ выставляет баллы по 6 критериям",
-    step3Title: "Отбор",
-    step3Desc: "Идеи автоматически сортируются по баллам",
-    step4Title: "Попадает в ТОП",
-    step4Desc: "Идеи с 85+ баллами видны руководству",
+    step1Title: "Зарегистрируйтесь",
+    step1Desc: "Создайте аккаунт и войдите в систему",
+    step2Title: "Подайте идею",
+    step2Desc: "Опишите свою стартап-идею через форму",
+    step3Title: "AI оценивает",
+    step3Desc: "ИИ выставляет баллы по 6 критериям",
+    step4Title: "Ждите результат",
+    step4Desc: "Руководство рассмотрит лучшие идеи",
     stat1: "Прозрачная оценка",
     stat2: "Автоматический скоринг",
     stat3: "Критериев оценки",
@@ -174,9 +327,9 @@ const translations = {
     footerDesc: "Инновационная платформа хокимията города Самарканд.",
     footerRights: "© 2026 Startup → Hokim. Все права защищены.",
 
-    allStartups: "Все идеи",
-    topStartups: "ТОП проекты",
-    statistics: "Статистика",
+    profileSaved: "Профиль сохранён",
+    saveProfile: "Сохранить",
+    saving: "Сохранение...",
   },
 } as const;
 
@@ -195,7 +348,21 @@ const I18nContext = createContext<I18nContextType>({
 });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("uz");
+  const [lang, setLangState] = useState<Lang>("uz");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("app_lang");
+      if (saved === "ru" || saved === "uz") setLangState(saved);
+    }
+  }, []);
+
+  const setLang = (newLang: Lang) => {
+    setLangState(newLang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("app_lang", newLang);
+    }
+  };
 
   return (
     <I18nContext.Provider value={{ lang, setLang, t: translations[lang] }}>
@@ -206,4 +373,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 export function useI18n() {
   return useContext(I18nContext);
+}
+
+export function getStatusLabel(status: string, t: Translations): string {
+  const map: Record<string, string> = {
+    pending: t.statusPending,
+    under_review: t.statusUnderReview,
+    approved: t.statusApproved,
+    rejected: t.statusRejected,
+    needs_revision: t.statusNeedsRevision,
+  };
+  return map[status] || status;
 }

@@ -47,15 +47,8 @@ export function Navbar() {
 
         <div className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                location.pathname === link.to
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-              }`}
-            >
+            <Link key={link.to} to={link.to}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${location.pathname === link.to ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"}`}>
               {link.label}
             </Link>
           ))}
@@ -66,32 +59,21 @@ export function Navbar() {
             <Globe className="h-4 w-4" />
             {lang === "uz" ? "RU" : "UZ"}
           </Button>
-
           {session.authenticated ? (
             <>
-              <span className="text-xs text-muted-foreground mr-1">
-                {session.username} ({session.role})
-              </span>
+              <span className="text-xs text-muted-foreground mr-1">{session.username}</span>
               {session.role === "admin" && (
-                <Link to="/admin-dashboard">
-                  <Button variant="outline" size="sm">{t.adminPanel}</Button>
-                </Link>
+                <Link to="/admin-dashboard"><Button variant="outline" size="sm">{t.adminPanel}</Button></Link>
               )}
               {session.role === "user" && (
-                <Link to="/user-dashboard">
-                  <Button variant="outline" size="sm">{t.submitIdea}</Button>
-                </Link>
+                <Link to="/user-dashboard"><Button variant="outline" size="sm">{t.userDashboard}</Button></Link>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-1" /> {t.logout}
               </Button>
             </>
           ) : (
-            <Link to="/login">
-              <Button variant="default" size="sm">
-                <LogIn className="h-4 w-4 mr-1" /> {t.login}
-              </Button>
-            </Link>
+            <Link to="/login"><Button variant="default" size="sm"><LogIn className="h-4 w-4 mr-1" /> {t.login}</Button></Link>
           )}
         </div>
 
@@ -103,25 +85,18 @@ export function Navbar() {
       {mobileOpen && (
         <div className="border-t bg-card px-4 py-3 md:hidden">
           {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
+            <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               {link.label}
             </Link>
           ))}
           <div className="mt-2 flex flex-col gap-2">
             <Button variant="ghost" size="sm" onClick={toggleLang} className="w-full justify-start gap-2">
-              <Globe className="h-4 w-4" />
-              {lang === "uz" ? "Русский" : "O'zbekcha"}
+              <Globe className="h-4 w-4" />{lang === "uz" ? "Русский" : "O'zbekcha"}
             </Button>
             {session.authenticated ? (
               <>
-                <span className="text-xs text-muted-foreground px-3">
-                  {session.username} ({session.role})
-                </span>
+                <span className="text-xs text-muted-foreground px-3">{session.username}</span>
                 {session.role === "admin" && (
                   <Link to="/admin-dashboard" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" size="sm" className="w-full">{t.adminPanel}</Button>
@@ -129,7 +104,7 @@ export function Navbar() {
                 )}
                 {session.role === "user" && (
                   <Link to="/user-dashboard" onClick={() => setMobileOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">{t.submitIdea}</Button>
+                    <Button variant="outline" size="sm" className="w-full">{t.userDashboard}</Button>
                   </Link>
                 )}
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleLogout(); setMobileOpen(false); }}>
@@ -138,9 +113,7 @@ export function Navbar() {
               </>
             ) : (
               <Link to="/login" onClick={() => setMobileOpen(false)}>
-                <Button variant="default" size="sm" className="w-full">
-                  <LogIn className="h-4 w-4 mr-1" /> {t.login}
-                </Button>
+                <Button variant="default" size="sm" className="w-full"><LogIn className="h-4 w-4 mr-1" /> {t.login}</Button>
               </Link>
             )}
           </div>
