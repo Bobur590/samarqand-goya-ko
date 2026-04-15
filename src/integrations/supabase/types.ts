@@ -14,59 +14,206 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notes: {
+        Row: {
+          admin_username: string
+          created_at: string
+          id: string
+          note: string
+          startup_id: string
+        }
+        Insert: {
+          admin_username: string
+          created_at?: string
+          id?: string
+          note: string
+          startup_id: string
+        }
+        Update: {
+          admin_username?: string
+          created_at?: string
+          id?: string
+          note?: string
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notes_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_users: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          password_hash: string
+          phone: string | null
+          region: string | null
+          role: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          password_hash: string
+          phone?: string | null
+          region?: string | null
+          role?: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          password_hash?: string
+          phone?: string | null
+          region?: string | null
+          role?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      startup_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          startup_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_type?: string
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          startup_id: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          startup_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "startup_documents_startup_id_fkey"
+            columns: ["startup_id"]
+            isOneToOne: false
+            referencedRelation: "startups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       startups: {
         Row: {
+          additional_notes: string | null
           ai_feedback: Json | null
           author_email: string | null
           author_name: string
           author_phone: string
           budget: string | null
+          business_model: string | null
           category: string
           created_at: string
+          current_stage: string | null
+          founder_name: string | null
           id: string
+          investment_needed: string | null
           pdf_url: string | null
           problem: string
+          region: string | null
           score: number | null
           solution: string
           status: string
+          target_audience: string | null
+          team_info: string | null
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          additional_notes?: string | null
           ai_feedback?: Json | null
           author_email?: string | null
           author_name: string
           author_phone: string
           budget?: string | null
+          business_model?: string | null
           category: string
           created_at?: string
+          current_stage?: string | null
+          founder_name?: string | null
           id?: string
+          investment_needed?: string | null
           pdf_url?: string | null
           problem: string
+          region?: string | null
           score?: number | null
           solution: string
           status?: string
+          target_audience?: string | null
+          team_info?: string | null
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          additional_notes?: string | null
           ai_feedback?: Json | null
           author_email?: string | null
           author_name?: string
           author_phone?: string
           budget?: string | null
+          business_model?: string | null
           category?: string
           created_at?: string
+          current_stage?: string | null
+          founder_name?: string | null
           id?: string
+          investment_needed?: string | null
           pdf_url?: string | null
           problem?: string
+          region?: string | null
           score?: number | null
           solution?: string
           status?: string
+          target_audience?: string | null
+          team_info?: string | null
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "startups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
