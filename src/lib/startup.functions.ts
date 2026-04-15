@@ -11,6 +11,7 @@ const submitSchema = z.object({
   author_name: z.string().min(2).max(100),
   author_phone: z.string().min(5).max(20),
   author_email: z.string().max(255),
+  pdf_url: z.string().max(1000).optional(),
 });
 
 export const submitStartup = createServerFn({ method: "POST" })
@@ -27,6 +28,7 @@ export const submitStartup = createServerFn({ method: "POST" })
         author_name: data.author_name,
         author_phone: data.author_phone,
         author_email: data.author_email || null,
+        pdf_url: data.pdf_url || null,
         status: "pending",
       })
       .select()
