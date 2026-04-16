@@ -2,17 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AuthScreen } from "@/components/auth-screen";
 import { GuestRoute } from "@/components/auth-guards";
 
-export const Route = createFileRoute("/login")({
-  component: LoginPage,
+export const Route = createFileRoute("/admin-login")({
+  component: AdminLoginPage,
   head: () => ({
-    meta: [{ title: "Kirish | Startup → Hokim" }],
+    meta: [{ title: "Admin Login | Startup → Hokim" }],
   }),
 });
 
-function LoginPage() {
+function AdminLoginPage() {
   return (
     <GuestRoute>
-      <AuthScreen mode="user-login" />
+      <AuthScreen mode="admin-login" />
     </GuestRoute>
   );
 }

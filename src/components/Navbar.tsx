@@ -1,28 +1,19 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Rocket, Menu, X, LogIn, LogOut, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { getSessionFn, logoutFn } from "@/lib/auth.functions";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 
 export function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [session, setSession] = useState<{ authenticated: boolean; role: string | null; username: string | null }>({ authenticated: false, role: null, username: null });
   const { t, lang, setLang } = useI18n();
-
-  const getSession = useServerFn(getSessionFn);
-  const logout = useServerFn(logoutFn);
-
-  useEffect(() => {
-    getSession().then(setSession).catch(() => {});
-  }, [location.pathname]);
+  const { isAuthenticated, role, username, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
-    setSession({ authenticated: false, role: null, username: null });
-    window.location.href = "/";
+    window.location.assign("/");
   };
 
   const toggleLang = () => setLang(lang === "uz" ? "ru" : "uz");
@@ -47,8 +38,11 @@ export function Navbar() {
 
         <div className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${location.pathname === link.to ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"}`}>
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${location.pathname === link.to ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"}`}
+            >
               {link.label}
             </Link>
           ))}
@@ -59,13 +53,13 @@ export function Navbar() {
             <Globe className="h-4 w-4" />
             {lang === "uz" ? "RU" : "UZ"}
           </Button>
-          {session.authenticated ? (
+          {isAuthenticated ? (
             <>
-              <span className="text-xs text-muted-foreground mr-1">{session.username}</span>
-              {session.role === "admin" && (
+              <span className="text-xs text-muted-foreground mr-1">{username}</span>
+              {role === "admin" && (
                 <Link to="/admin-dashboard"><Button variant="outline" size="sm">{t.adminPanel}</Button></Link>
               )}
-              {session.role === "user" && (
+              {role === "user" && (
                 <Link to="/user-dashboard"><Button variant="outline" size="sm">{t.userDashboard}</Button></Link>
               )}
               <Button variant="ghost" size="sm" onClick={handleLogout}>
@@ -85,8 +79,7 @@ export function Navbar() {
       {mobileOpen && (
         <div className="border-t bg-card px-4 py-3 md:hidden">
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)}
-              className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+            <Link key={link.to} to={link.to} onClick={() => setMobileOpen(false)} className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
               {link.label}
             </Link>
           ))}
@@ -94,20 +87,20 @@ export function Navbar() {
             <Button variant="ghost" size="sm" onClick={toggleLang} className="w-full justify-start gap-2">
               <Globe className="h-4 w-4" />{lang === "uz" ? "Русский" : "O'zbekcha"}
             </Button>
-            {session.authenticated ? (
+            {isAuthenticated ? (
               <>
-                <span className="text-xs text-muted-foreground px-3">{session.username}</span>
-                {session.role === "admin" && (
+                <span className="text-xs text-muted-foreground px-3">{username}</span>
+                {role === "admin" && (
                   <Link to="/admin-dashboard" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" size="sm" className="w-full">{t.adminPanel}</Button>
                   </Link>
                 )}
-                {session.role === "user" && (
+                {role === "user" && (
                   <Link to="/user-dashboard" onClick={() => setMobileOpen(false)}>
                     <Button variant="outline" size="sm" className="w-full">{t.userDashboard}</Button>
                   </Link>
                 )}
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => { handleLogout(); setMobileOpen(false); }}>
+                <Button variant="ghost" size="sm" className="w-full" onClick={() => { void handleLogout(); setMobileOpen(false); }}>
                   <LogOut className="h-4 w-4 mr-1" /> {t.logout}
                 </Button>
               </>

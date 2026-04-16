@@ -1,20 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { UserRoute } from "@/components/auth-guards";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSessionFn, getUserProfileFn, updateProfileFn } from "@/lib/auth.functions";
+import { getUserProfileFn, updateProfileFn } from "@/lib/auth.functions";
 import { submitStartup, getUserStartups } from "@/lib/startup.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
 import { useI18n, getStatusLabel } from "@/lib/i18n";
 import { CATEGORIES, STAGES } from "@/lib/types";
-import type { StartupSubmission, AppUser } from "@/lib/types";
+import type { StartupSubmission } from "@/lib/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth-context";
 import {
   LayoutDashboard, Send, FileText, User, Loader2, CheckCircle2,
   FileUp, X, Rocket, Clock, CheckCircle, XCircle, Eye,
@@ -23,42 +25,26 @@ import { ScoreBadge } from "@/components/ScoreBadge";
 import { StartupDetailDialog } from "@/components/StartupDetailDialog";
 
 export const Route = createFileRoute("/user-dashboard")({
-  component: UserDashboardPage,
+  component: UserDashboardRoute,
   head: () => ({ meta: [{ title: "Dashboard | Startup → Hokim" }] }),
 });
 
 type Tab = "dashboard" | "submit" | "my-startups" | "profile";
 
+function UserDashboardRoute() {
+  return (
+    <UserRoute>
+      <UserDashboardPage />
+    </UserRoute>
+  );
+}
+
 function UserDashboardPage() {
   const { t } = useI18n();
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [session, setSession] = useState<{ userId: string; username: string } | null>(null);
+  const { userId, username } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
 
-  const getSession = useServerFn(getSessionFn);
-
-  useEffect(() => {
-    getSession().then((s) => {
-      if (!s.authenticated || s.role !== "user") {
-        window.location.href = "/login";
-      } else {
-        setSession({ userId: s.userId!, username: s.username! });
-        setAuthorized(true);
-      }
-    }).catch(() => { window.location.href = "/login"; });
-  }, []);
-
-  if (!authorized || !session) {
-    return (
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  const session = { userId: userId!, username: username! };
 
   const tabs = [
     { key: "dashboard" as const, label: t.dashboardTab, icon: LayoutDashboard },
@@ -128,12 +114,12 @@ function DashboardTab({ session, onNavigate }: { session: { userId: string; user
   const fetchFn = useServerFn(getUserStartups);
 
   useEffect(() => {
-    fetchFn({ data: { userId: session.userId } }).then((d) => { setStartups(d as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
+    fetchFn({ data: { userId: session.userId } }).then((data) => { setStartups(data as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false));
+  }, [fetchFn, session.userId]);
 
-  const pending = startups.filter((s) => s.status === "pending" || s.status === "under_review").length;
-  const approved = startups.filter((s) => s.status === "approved").length;
-  const rejected = startups.filter((s) => s.status === "rejected").length;
+  const pending = startups.filter((startup) => startup.status === "pending" || startup.status === "under_review").length;
+  const approved = startups.filter((startup) => startup.status === "approved").length;
+  const rejected = startups.filter((startup) => startup.status === "rejected").length;
 
   return (
     <div>
@@ -172,19 +158,18 @@ function SubmitTab({ session }: { session: { userId: string; username: string } 
   });
 
   const submitFn = useServerFn(submitStartup);
+  const set = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const set = (key: string, val: string) => setForm((prev) => ({ ...prev, [key]: val }));
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
     if (file.type !== "application/pdf") { toast.error(t.pdfOnly); return; }
     if (file.size > 10 * 1024 * 1024) { toast.error(t.pdfTooLarge); return; }
     setPdfFile(file);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!form.title || !form.problem || !form.solution || !form.category || !form.author_name || !form.author_phone) {
       toast.error(t.fillRequired); return;
     }
@@ -231,58 +216,58 @@ function SubmitTab({ session }: { session: { userId: string; username: string } 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{t.startupName} *</Label>
-              <Input value={form.title} onChange={(e) => set("title", e.target.value)} className="mt-1" />
+              <Input value={form.title} onChange={(event) => set("title", event.target.value)} className="mt-1" />
             </div>
             <div>
               <Label>{t.category} *</Label>
-              <Select value={form.category} onValueChange={(v) => set("category", v)}>
+              <Select value={form.category} onValueChange={(value) => set("category", value)}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder={t.selectCategory} /></SelectTrigger>
-                <SelectContent>{CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <SelectContent>{CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}</SelectContent>
               </Select>
             </div>
           </div>
           <div>
             <Label>{t.problemLabel} *</Label>
-            <Textarea rows={3} value={form.problem} onChange={(e) => set("problem", e.target.value)} placeholder={t.problemPlaceholder} className="mt-1" />
+            <Textarea rows={3} value={form.problem} onChange={(event) => set("problem", event.target.value)} placeholder={t.problemPlaceholder} className="mt-1" />
           </div>
           <div>
             <Label>{t.solutionLabel} *</Label>
-            <Textarea rows={3} value={form.solution} onChange={(e) => set("solution", e.target.value)} placeholder={t.solutionPlaceholder} className="mt-1" />
+            <Textarea rows={3} value={form.solution} onChange={(event) => set("solution", event.target.value)} placeholder={t.solutionPlaceholder} className="mt-1" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{t.businessModel}</Label>
-              <Textarea rows={2} value={form.business_model} onChange={(e) => set("business_model", e.target.value)} placeholder={t.businessModelPlaceholder} className="mt-1" />
+              <Textarea rows={2} value={form.business_model} onChange={(event) => set("business_model", event.target.value)} placeholder={t.businessModelPlaceholder} className="mt-1" />
             </div>
             <div>
               <Label>{t.targetAudience}</Label>
-              <Input value={form.target_audience} onChange={(e) => set("target_audience", e.target.value)} placeholder={t.targetAudiencePlaceholder} className="mt-1" />
+              <Input value={form.target_audience} onChange={(event) => set("target_audience", event.target.value)} placeholder={t.targetAudiencePlaceholder} className="mt-1" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label>{t.currentStage}</Label>
-              <Select value={form.current_stage} onValueChange={(v) => set("current_stage", v)}>
+              <Select value={form.current_stage} onValueChange={(value) => set("current_stage", value)}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder={t.selectStage} /></SelectTrigger>
-                <SelectContent>{STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                <SelectContent>{STAGES.map((stage) => <SelectItem key={stage} value={stage}>{stage}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>
               <Label>{t.budget}</Label>
-              <Input value={form.budget} onChange={(e) => set("budget", e.target.value)} placeholder={t.budgetPlaceholder} className="mt-1" />
+              <Input value={form.budget} onChange={(event) => set("budget", event.target.value)} placeholder={t.budgetPlaceholder} className="mt-1" />
             </div>
             <div>
               <Label>{t.investmentNeeded}</Label>
-              <Input value={form.investment_needed} onChange={(e) => set("investment_needed", e.target.value)} placeholder={t.investmentPlaceholder} className="mt-1" />
+              <Input value={form.investment_needed} onChange={(event) => set("investment_needed", event.target.value)} placeholder={t.investmentPlaceholder} className="mt-1" />
             </div>
           </div>
           <div>
             <Label>{t.teamInfo}</Label>
-            <Textarea rows={2} value={form.team_info} onChange={(e) => set("team_info", e.target.value)} placeholder={t.teamInfoPlaceholder} className="mt-1" />
+            <Textarea rows={2} value={form.team_info} onChange={(event) => set("team_info", event.target.value)} placeholder={t.teamInfoPlaceholder} className="mt-1" />
           </div>
           <div>
             <Label>{t.additionalNotes}</Label>
-            <Textarea rows={2} value={form.additional_notes} onChange={(e) => set("additional_notes", e.target.value)} className="mt-1" />
+            <Textarea rows={2} value={form.additional_notes} onChange={(event) => set("additional_notes", event.target.value)} className="mt-1" />
           </div>
         </div>
 
@@ -315,26 +300,26 @@ function SubmitTab({ session }: { session: { userId: string; username: string } 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{t.fullName} *</Label>
-              <Input value={form.author_name} onChange={(e) => set("author_name", e.target.value)} className="mt-1" />
+              <Input value={form.author_name} onChange={(event) => set("author_name", event.target.value)} className="mt-1" />
             </div>
             <div>
               <Label>{t.founderName}</Label>
-              <Input value={form.founder_name} onChange={(e) => set("founder_name", e.target.value)} className="mt-1" />
+              <Input value={form.founder_name} onChange={(event) => set("founder_name", event.target.value)} className="mt-1" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>{t.phone} *</Label>
-              <Input value={form.author_phone} onChange={(e) => set("author_phone", e.target.value)} placeholder="+998 90 123 45 67" className="mt-1" />
+              <Input value={form.author_phone} onChange={(event) => set("author_phone", event.target.value)} placeholder="+998 90 123 45 67" className="mt-1" />
             </div>
             <div>
               <Label>{t.emailOptional}</Label>
-              <Input type="email" value={form.author_email} onChange={(e) => set("author_email", e.target.value)} placeholder="email@example.com" className="mt-1" />
+              <Input type="email" value={form.author_email} onChange={(event) => set("author_email", event.target.value)} placeholder="email@example.com" className="mt-1" />
             </div>
           </div>
           <div>
             <Label>{t.regionField}</Label>
-            <Input value={form.region} onChange={(e) => set("region", e.target.value)} placeholder="Samarqand" className="mt-1" />
+            <Input value={form.region} onChange={(event) => set("region", event.target.value)} placeholder="Samarqand" className="mt-1" />
           </div>
         </div>
 
@@ -354,8 +339,8 @@ function MyStartupsTab({ session }: { session: { userId: string; username: strin
   const fetchFn = useServerFn(getUserStartups);
 
   useEffect(() => {
-    fetchFn({ data: { userId: session.userId } }).then((d) => { setStartups(d as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
+    fetchFn({ data: { userId: session.userId } }).then((data) => { setStartups(data as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false));
+  }, [fetchFn, session.userId]);
 
   if (loading) return <div className="py-20 text-center text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div>;
 
@@ -374,24 +359,24 @@ function MyStartupsTab({ session }: { session: { userId: string; username: strin
       <h1 className="text-2xl font-bold text-foreground">{t.myStartups}</h1>
       <p className="text-muted-foreground mt-1">{t.total}: {startups.length}</p>
       <div className="mt-6 space-y-3">
-        {startups.map((s) => (
-          <div key={s.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4 hover:shadow-sm transition-shadow">
+        {startups.map((startup) => (
+          <div key={startup.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4 hover:shadow-sm transition-shadow">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-semibold text-foreground truncate">{s.title}</h3>
-                <StatusBadge status={s.status} />
+                <h3 className="font-semibold text-foreground truncate">{startup.title}</h3>
+                <StatusBadge status={startup.status} />
               </div>
-              <p className="text-sm text-muted-foreground mt-0.5 truncate">{s.problem}</p>
-              <p className="text-xs text-muted-foreground mt-1">{s.category} • {new Date(s.created_at).toLocaleDateString("uz")}</p>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">{startup.problem}</p>
+              <p className="text-xs text-muted-foreground mt-1">{startup.category} • {new Date(startup.created_at).toLocaleDateString("uz")}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {s.score !== null && <ScoreBadge score={s.score} size="sm" />}
-              {s.pdf_url && (
-                <a href={s.pdf_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+              {startup.score !== null && <ScoreBadge score={startup.score} size="sm" />}
+              {startup.pdf_url && (
+                <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer" onClick={(event) => event.stopPropagation()}>
                   <Button variant="ghost" size="icon"><FileText className="h-4 w-4" /></Button>
                 </a>
               )}
-              <Button variant="ghost" size="icon" onClick={() => setSelected(s)}><Eye className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setSelected(startup)}><Eye className="h-4 w-4" /></Button>
             </div>
           </div>
         ))}
@@ -411,16 +396,16 @@ function ProfileTab({ session }: { session: { userId: string; username: string }
   const updateProfile = useServerFn(updateProfileFn);
 
   useEffect(() => {
-    getProfile({ data: { userId: session.userId } }).then((p) => {
-      if (p) {
-        setForm({ full_name: p.full_name, phone: p.phone || "", email: p.email || "", region: p.region || "" });
+    getProfile({ data: { userId: session.userId } }).then((profile) => {
+      if (profile) {
+        setForm({ full_name: profile.full_name, phone: profile.phone || "", email: profile.email || "", region: profile.region || "" });
       }
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, []);
+  }, [getProfile, session.userId]);
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (event: React.FormEvent) => {
+    event.preventDefault();
     setSaving(true);
     try {
       await updateProfile({ data: { userId: session.userId, ...form, phone: form.phone || undefined, email: form.email || undefined, region: form.region || undefined } });
@@ -444,19 +429,19 @@ function ProfileTab({ session }: { session: { userId: string; username: string }
         </div>
         <div>
           <Label>{t.fullName}</Label>
-          <Input value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} className="mt-1" />
+          <Input value={form.full_name} onChange={(event) => setForm({ ...form, full_name: event.target.value })} className="mt-1" />
         </div>
         <div>
           <Label>{t.phone}</Label>
-          <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1" />
+          <Input value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} className="mt-1" />
         </div>
         <div>
           <Label>{t.email}</Label>
-          <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="mt-1" />
+          <Input type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} className="mt-1" />
         </div>
         <div>
           <Label>{t.regionField}</Label>
-          <Input value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} className="mt-1" />
+          <Input value={form.region} onChange={(event) => setForm({ ...form, region: event.target.value })} className="mt-1" />
         </div>
         <Button type="submit" disabled={saving}>{saving ? t.saving : t.saveProfile}</Button>
       </form>
