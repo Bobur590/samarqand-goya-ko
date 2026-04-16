@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { AdminRoute } from "@/components/auth-guards";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getSessionFn, getAllUsersFn } from "@/lib/auth.functions";
+import { getAllUsersFn } from "@/lib/auth.functions";
 import { getAllStartups, updateStartupStatus, addAdminNote, getAdminNotes, getDashboardStats } from "@/lib/startup.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
@@ -15,35 +16,33 @@ import { CATEGORIES, STATUSES } from "@/lib/types";
 import type { StartupSubmission, AppUser, AdminNote } from "@/lib/types";
 import { toast } from "sonner";
 import { ScoreBadge } from "@/components/ScoreBadge";
+import { useAuth } from "@/lib/auth-context";
 import {
   LayoutDashboard, List, Users, Loader2, Search, RefreshCw, Eye,
-  FileText, MessageSquare, CheckCircle, XCircle, Clock, FileUp, Send,
+  FileText, CheckCircle, XCircle, Clock, FileUp, Send,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin-dashboard")({
-  component: AdminDashboardPage,
+  component: AdminDashboardRoute,
   head: () => ({ meta: [{ title: "Admin Dashboard | Startup → Hokim" }] }),
 });
 
 type Tab = "dashboard" | "startups" | "users";
 
+function AdminDashboardRoute() {
+  return (
+    <AdminRoute>
+      <AdminDashboardPage />
+    </AdminRoute>
+  );
+}
+
 function AdminDashboardPage() {
   const { t } = useI18n();
-  const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [session, setSession] = useState<{ username: string } | null>(null);
+  const { username } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
-  const getSession = useServerFn(getSessionFn);
 
-  useEffect(() => {
-    getSession().then((s) => {
-      if (!s.authenticated || s.role !== "admin") { window.location.href = "/login"; }
-      else { setSession({ username: s.username! }); setAuthorized(true); }
-    }).catch(() => { window.location.href = "/login"; });
-  }, []);
-
-  if (!authorized || !session) {
-    return (<div className="flex min-h-screen flex-col"><Navbar /><main className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></main><Footer /></div>);
-  }
+  const session = { username: username! };
 
   const tabs = [
     { key: "dashboard" as const, label: t.dashboardTab, icon: LayoutDashboard },
@@ -65,8 +64,7 @@ function AdminDashboardPage() {
           </div>
           <nav className="flex-1 p-3 space-y-1">
             {tabs.map((tab) => (
-              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.key ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${activeTab === tab.key ? "bg-sidebar-accent text-sidebar-primary" : "text-sidebar-foreground hover:bg-sidebar-accent/50"}`}>
                 <tab.icon className="h-4 w-4" />{tab.label}
               </button>
             ))}
@@ -75,8 +73,7 @@ function AdminDashboardPage() {
         <main className="flex-1 flex flex-col">
           <div className="md:hidden flex border-b bg-card">
             {tabs.map((tab) => (
-              <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === tab.key ? "border-primary text-primary" : "border-transparent text-muted-foreground"}`}>
                 <tab.icon className="h-3.5 w-3.5" />{tab.label}
               </button>
             ))}
@@ -101,7 +98,7 @@ function AdminDashboardTab() {
   const [loading, setLoading] = useState(true);
   const fetchStats = useServerFn(getDashboardStats);
 
-  useEffect(() => { fetchStats().then((s) => { setStats(s); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  useEffect(() => { fetchStats().then((data) => { setStats(data); setLoading(false); }).catch(() => setLoading(false)); }, [fetchStats]);
 
   if (loading) return <div className="py-20 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></div>;
   if (!stats) return null;
@@ -141,13 +138,13 @@ function StartupsTab({ adminUsername }: { adminUsername: string }) {
   const [selected, setSelected] = useState<StartupSubmission | null>(null);
   const fetchFn = useServerFn(getAllStartups);
 
-  const load = () => { setLoading(true); fetchFn().then((d) => { setStartups(d as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false)); };
-  useEffect(() => { load(); }, []);
+  const load = () => { setLoading(true); fetchFn().then((data) => { setStartups(data as StartupSubmission[]); setLoading(false); }).catch(() => setLoading(false)); };
+  useEffect(() => { load(); }, [fetchFn]);
 
-  const filtered = startups.filter((s) => {
-    if (search && !s.title.toLowerCase().includes(search.toLowerCase()) && !s.author_name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (catFilter !== "all" && s.category !== catFilter) return false;
-    if (statusFilter !== "all" && s.status !== statusFilter) return false;
+  const filtered = startups.filter((startup) => {
+    if (search && !startup.title.toLowerCase().includes(search.toLowerCase()) && !startup.author_name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (catFilter !== "all" && startup.category !== catFilter) return false;
+    if (statusFilter !== "all" && startup.status !== statusFilter) return false;
     return true;
   });
 
@@ -157,20 +154,20 @@ function StartupsTab({ adminUsername }: { adminUsername: string }) {
       <div className="flex flex-wrap gap-3 mt-4 mb-4">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder={t.search} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input placeholder={t.search} className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
         <Select value={catFilter} onValueChange={setCatFilter}>
           <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t.allCategories}</SelectItem>
-            {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t.allStatuses}</SelectItem>
-            {STATUSES.map((s) => <SelectItem key={s} value={s}>{getStatusLabel(s, t)}</SelectItem>)}
+            {STATUSES.map((status) => <SelectItem key={status} value={status}>{getStatusLabel(status, t)}</SelectItem>)}
           </SelectContent>
         </Select>
         <Button variant="outline" size="icon" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
@@ -181,20 +178,20 @@ function StartupsTab({ adminUsername }: { adminUsername: string }) {
         <div className="py-20 text-center text-muted-foreground">{t.noIdeas}</div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((s) => (
-            <div key={s.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4 hover:shadow-sm transition-shadow">
+          {filtered.map((startup) => (
+            <div key={startup.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4 hover:shadow-sm transition-shadow">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-semibold text-foreground truncate">{s.title}</h3>
-                  <SBadge status={s.status} />
-                  {s.pdf_url && <a href={s.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline" onClick={(e) => e.stopPropagation()}>📄 PDF</a>}
+                  <h3 className="font-semibold text-foreground truncate">{startup.title}</h3>
+                  <SBadge status={startup.status} />
+                  {startup.pdf_url && <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline" onClick={(event) => event.stopPropagation()}>📄 PDF</a>}
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5 truncate">{s.problem}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.author_name} • {s.category} • {new Date(s.created_at).toLocaleDateString("uz")}</p>
+                <p className="text-sm text-muted-foreground mt-0.5 truncate">{startup.problem}</p>
+                <p className="text-xs text-muted-foreground mt-1">{startup.author_name} • {startup.category} • {new Date(startup.created_at).toLocaleDateString("uz")}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {s.score !== null && <ScoreBadge score={s.score} size="sm" />}
-                <Button variant="ghost" size="icon" onClick={() => setSelected(s)}><Eye className="h-4 w-4" /></Button>
+                {startup.score !== null && <ScoreBadge score={startup.score} size="sm" />}
+                <Button variant="ghost" size="icon" onClick={() => setSelected(startup)}><Eye className="h-4 w-4" /></Button>
               </div>
             </div>
           ))}
@@ -216,7 +213,7 @@ function AdminDetailDialog({ startup, adminUsername, onClose }: { startup: Start
   const addNote = useServerFn(addAdminNote);
   const fetchNotes = useServerFn(getAdminNotes);
 
-  useEffect(() => { fetchNotes({ data: { startupId: startup.id } }).then((n) => setNotes(n as AdminNote[])).catch(() => {}); }, []);
+  useEffect(() => { fetchNotes({ data: { startupId: startup.id } }).then((data) => setNotes(data as AdminNote[])).catch(() => {}); }, [fetchNotes, startup.id]);
 
   const handleStatusChange = async (newStatus: string) => {
     setStatus(newStatus);
@@ -283,22 +280,22 @@ function AdminDetailDialog({ startup, adminUsername, onClose }: { startup: Start
             <h4 className="text-sm font-semibold mb-2">{t.changeStatus}</h4>
             <Select value={status} onValueChange={handleStatusChange}>
               <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-              <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{getStatusLabel(s, t)}</SelectItem>)}</SelectContent>
+              <SelectContent>{STATUSES.map((item) => <SelectItem key={item} value={item}>{getStatusLabel(item, t)}</SelectItem>)}</SelectContent>
             </Select>
           </div>
 
           <div className="border-t pt-4">
             <h4 className="text-sm font-semibold mb-2">{t.adminNotes}</h4>
             <div className="flex gap-2 mb-3">
-              <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.noteText} className="flex-1" />
+              <Textarea rows={2} value={note} onChange={(event) => setNote(event.target.value)} placeholder={t.noteText} className="flex-1" />
               <Button onClick={handleAddNote} disabled={saving} size="sm" className="self-end"><Send className="h-4 w-4" /></Button>
             </div>
             {notes.length === 0 ? <p className="text-xs text-muted-foreground">{t.noNotes}</p> : (
               <div className="space-y-2">
-                {notes.map((n) => (
-                  <div key={n.id} className="rounded-lg border bg-accent/50 p-3">
-                    <p className="text-sm">{n.note}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{n.admin_username} • {new Date(n.created_at).toLocaleString("uz")}</p>
+                {notes.map((item) => (
+                  <div key={item.id} className="rounded-lg border bg-accent/50 p-3">
+                    <p className="text-sm">{item.note}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{item.admin_username} • {new Date(item.created_at).toLocaleString("uz")}</p>
                   </div>
                 ))}
               </div>
@@ -317,10 +314,10 @@ function UsersTab() {
   const [search, setSearch] = useState("");
   const fetchUsers = useServerFn(getAllUsersFn);
 
-  useEffect(() => { fetchUsers().then((d) => { setUsers(d as AppUser[]); setLoading(false); }).catch(() => setLoading(false)); }, []);
+  useEffect(() => { fetchUsers().then((data) => { setUsers(data as AppUser[]); setLoading(false); }).catch(() => setLoading(false)); }, [fetchUsers]);
 
-  const filtered = users.filter((u) => {
-    if (search && !u.username.toLowerCase().includes(search.toLowerCase()) && !u.full_name.toLowerCase().includes(search.toLowerCase())) return false;
+  const filtered = users.filter((user) => {
+    if (search && !user.username.toLowerCase().includes(search.toLowerCase()) && !user.full_name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -329,19 +326,19 @@ function UsersTab() {
       <h1 className="text-2xl font-bold text-foreground">{t.usersTab}</h1>
       <div className="relative mt-4 mb-4 max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder={t.search} className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder={t.search} className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
       </div>
       {loading ? <div className="py-20 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto" /></div> : (
         <div className="space-y-3">
-          {filtered.map((u) => (
-            <div key={u.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4">
+          {filtered.map((user) => (
+            <div key={user.id} className="flex items-center justify-between gap-4 rounded-xl border bg-card p-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground">{u.full_name}</h3>
-                  <span className="text-xs rounded-full bg-accent px-2 py-0.5">{u.role}</span>
+                  <h3 className="font-semibold text-foreground">{user.full_name}</h3>
+                  <span className="text-xs rounded-full bg-accent px-2 py-0.5">{user.role}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">@{u.username} {u.email ? `• ${u.email}` : ""} {u.phone ? `• ${u.phone}` : ""}</p>
-                <p className="text-xs text-muted-foreground">{new Date(u.created_at).toLocaleDateString("uz")}</p>
+                <p className="text-sm text-muted-foreground">@{user.username} {user.email ? `• ${user.email}` : ""} {user.phone ? `• ${user.phone}` : ""}</p>
+                <p className="text-xs text-muted-foreground">{new Date(user.created_at).toLocaleDateString("uz")}</p>
               </div>
             </div>
           ))}
