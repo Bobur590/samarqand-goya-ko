@@ -1,3 +1,5 @@
+export type AppRole = "admin" | "user";
+
 export interface StartupSubmission {
   id: string;
   title: string;
@@ -75,7 +77,7 @@ export interface AppUser {
   phone: string | null;
   email: string | null;
   region: string | null;
-  role: string;
+  role: AppRole;
   created_at: string;
 }
 
