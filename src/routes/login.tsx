@@ -121,6 +121,11 @@ function LoginPage() {
                   {t.noAccount}{" "}
                   <button type="button" onClick={() => setMode("register")} className="text-primary font-medium hover:underline">{t.register}</button>
                 </p>
+                <div className="mt-4 rounded-lg bg-accent/50 p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">Demo kirish:</p>
+                  <p>👤 User: <code className="bg-accent px-1 rounded">startup_user</code> / <code className="bg-accent px-1 rounded">UserAccess_2026#</code></p>
+                  <p>🔐 Admin: <code className="bg-accent px-1 rounded">superadmin</code> / <code className="bg-accent px-1 rounded">PanelMaster_2026#</code></p>
+                </div>
               </form>
             ) : (
               <form onSubmit={handleRegister} className="space-y-3">

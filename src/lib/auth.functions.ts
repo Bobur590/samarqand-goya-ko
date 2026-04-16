@@ -25,16 +25,32 @@ async function verifyPassword(password: string, stored: string): Promise<boolean
   return computed === hashB64;
 }
 
-// --- Ensure admin account exists ---
-async function ensureAdminExists() {
-  const { data } = await supabaseAdmin.from("app_users").select("id").eq("username", "superadmin").single();
-  if (!data) {
-    const hash = await hashPassword("SecurePanel_2026!");
+// --- Seed demo accounts ---
+async function seedDemoAccounts() {
+  // Admin: superadmin / PanelMaster_2026#
+  const { data: adminExists } = await supabaseAdmin.from("app_users").select("id").eq("username", "superadmin").single();
+  if (!adminExists) {
+    const hash = await hashPassword("PanelMaster_2026#");
     await supabaseAdmin.from("app_users").insert({
       username: "superadmin",
       password_hash: hash,
       full_name: "Super Admin",
       role: "admin",
+    });
+  }
+
+  // User: startup_user / UserAccess_2026#
+  const { data: userExists } = await supabaseAdmin.from("app_users").select("id").eq("username", "startup_user").single();
+  if (!userExists) {
+    const hash = await hashPassword("UserAccess_2026#");
+    await supabaseAdmin.from("app_users").insert({
+      username: "startup_user",
+      password_hash: hash,
+      full_name: "Demo Foydalanuvchi",
+      phone: "+998 90 123 45 67",
+      email: "demo@startup.uz",
+      region: "Samarqand",
+      role: "user",
     });
   }
 }
@@ -60,18 +76,12 @@ const registerSchema = z.object({
 export const registerFn = createServerFn({ method: "POST" })
   .inputValidator((input: z.infer<typeof registerSchema>) => registerSchema.parse(input))
   .handler(async ({ data }) => {
-    // Check if username exists
     const { data: existing } = await supabaseAdmin.from("app_users").select("id").eq("username", data.username).single();
-    if (existing) {
-      return { success: false as const, error: "username_taken" };
-    }
+    if (existing) return { success: false as const, error: "username_taken" };
 
-    // Check email uniqueness if provided
     if (data.email) {
       const { data: emailExists } = await supabaseAdmin.from("app_users").select("id").eq("email", data.email).single();
-      if (emailExists) {
-        return { success: false as const, error: "email_taken" };
-      }
+      if (emailExists) return { success: false as const, error: "email_taken" };
     }
 
     const hash = await hashPassword(data.password);
@@ -103,22 +113,18 @@ const loginSchema = z.object({
 export const loginFn = createServerFn({ method: "POST" })
   .inputValidator((input: z.infer<typeof loginSchema>) => loginSchema.parse(input))
   .handler(async ({ data }) => {
-    // Ensure admin exists on first login attempt
-    try { await ensureAdminExists(); } catch (e) { console.error("Admin seed error:", e); }
+    // Seed demo accounts on first login attempt
+    try { await seedDemoAccounts(); } catch (e) { console.error("Seed error:", e); }
 
     const { data: user } = await supabaseAdmin.from("app_users")
       .select("*")
       .eq("username", data.username)
       .single();
 
-    if (!user) {
-      return { success: false as const, error: "invalid_credentials" };
-    }
+    if (!user) return { success: false as const, error: "invalid_credentials" };
 
     const valid = await verifyPassword(data.password, user.password_hash);
-    if (!valid) {
-      return { success: false as const, error: "invalid_credentials" };
-    }
+    if (!valid) return { success: false as const, error: "invalid_credentials" };
 
     setAuthCookies(user.id, user.username, user.role);
     return { success: true as const, role: user.role, username: user.username, userId: user.id };
