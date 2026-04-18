@@ -208,6 +208,7 @@ function AdminDetailDialog({ startup, adminUsername, onClose }: { startup: Start
   const [note, setNote] = useState("");
   const [notes, setNotes] = useState<AdminNote[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showPdf, setShowPdf] = useState(false);
 
   const updateStatus = useServerFn(updateStartupStatus);
   const addNote = useServerFn(addAdminNote);
