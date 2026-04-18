@@ -5,8 +5,8 @@ import { requireAuth } from "@/lib/auth-session";
 
 const submitSchema = z.object({
   title: z.string().min(2).max(200),
-  problem: z.string().min(10).max(2000),
-  solution: z.string().min(10).max(2000),
+  problem: z.string().min(3).max(2000),
+  solution: z.string().min(3).max(2000),
   budget: z.string().max(100),
   category: z.string().min(1).max(100),
   author_name: z.string().min(2).max(100),
