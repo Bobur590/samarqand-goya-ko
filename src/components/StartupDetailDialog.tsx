@@ -2,7 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { SCORE_CRITERIA } from "@/lib/types";
 import type { StartupSubmission } from "@/lib/types";
-import { CheckCircle2, XCircle, FileText } from "lucide-react";
+import { CheckCircle2, XCircle, FileText, Download, ExternalLink } from "lucide-react";
+import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
@@ -13,10 +14,11 @@ interface Props {
 
 export function StartupDetailDialog({ startup, onClose }: Props) {
   const fb = startup.ai_feedback;
+  const [showPdf, setShowPdf] = useState(false);
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg">{startup.title}</DialogTitle>
         </DialogHeader>
@@ -26,11 +28,32 @@ export function StartupDetailDialog({ startup, onClose }: Props) {
             <div className="text-xs text-muted-foreground mb-1">Kategoriya: {startup.category}</div>
             <div className="text-xs text-muted-foreground">Muallif: {startup.author_name} | {startup.author_phone}</div>
             {startup.pdf_url && (
-              <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex">
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <FileText className="h-3.5 w-3.5" /> PDF faylni ko'rish
-                </Button>
-              </a>
+              <div className="mt-3 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPdf((v) => !v)}>
+                    <FileText className="h-3.5 w-3.5" /> {showPdf ? "PDF ni yashirish" : "PDF ni ko'rish"}
+                  </Button>
+                  <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                      <ExternalLink className="h-3.5 w-3.5" /> Yangi oynada
+                    </Button>
+                  </a>
+                  <a href={startup.pdf_url} download>
+                    <Button variant="outline" size="sm" className="gap-1.5">
+                      <Download className="h-3.5 w-3.5" /> Yuklab olish
+                    </Button>
+                  </a>
+                </div>
+                {showPdf && (
+                  <div className="rounded-lg overflow-hidden border bg-muted">
+                    <iframe
+                      src={startup.pdf_url}
+                      title="Startup PDF"
+                      className="w-full h-[600px]"
+                    />
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
