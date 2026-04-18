@@ -21,12 +21,12 @@ function getSessionConfig() {
 
   return {
     password,
-    name: "startup-platform-session",
+    name: "startup_platform_session",
     maxAge: 60 * 60 * 24 * 7,
     cookie: {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax" as const,
+      secure: true,
+      sameSite: "none" as const,
       path: "/",
     },
   };

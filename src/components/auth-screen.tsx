@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { LogIn, Shield, UserPlus } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -63,6 +63,7 @@ function getAuthCopy(mode: AuthScreenMode, lang: "uz" | "ru") {
 export function AuthScreen({ mode }: { mode: AuthScreenMode }) {
   const { t, lang } = useI18n();
   const { login, register } = useAuth();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -115,7 +116,8 @@ export function AuthScreen({ mode }: { mode: AuthScreenMode }) {
       });
 
       if (result.success) {
-        window.location.assign(result.role === "admin" ? "/admin-dashboard" : "/user-dashboard");
+        const target = result.role === "admin" ? "/admin-dashboard" : "/user-dashboard";
+        await navigate({ to: target, replace: true });
         return;
       }
 
@@ -149,7 +151,7 @@ export function AuthScreen({ mode }: { mode: AuthScreenMode }) {
       });
 
       if (result.success) {
-        window.location.assign("/user-dashboard");
+        await navigate({ to: "/user-dashboard", replace: true });
         return;
       }
 
