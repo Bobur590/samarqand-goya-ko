@@ -251,9 +251,33 @@ function AdminDetailDialog({ startup, adminUsername, onClose }: { startup: Start
           </div>
 
           {startup.pdf_url && (
-            <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> {t.viewPdf}</Button>
-            </a>
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setShowPdf((v) => !v)}>
+                  <FileText className="h-3.5 w-3.5" /> {showPdf ? "PDF ni yashirish" : "PDF ni ko'rish"}
+                </Button>
+                <a href={startup.pdf_url} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Yangi oynada</Button>
+                </a>
+                <a href={startup.pdf_url} download>
+                  <Button variant="outline" size="sm" className="gap-1.5"><FileText className="h-3.5 w-3.5" /> Yuklab olish</Button>
+                </a>
+              </div>
+              {showPdf && (
+                <div className="rounded-lg overflow-hidden border bg-muted">
+                  <object data={startup.pdf_url} type="application/pdf" className="w-full h-[600px]">
+                    <iframe
+                      src={`https://docs.google.com/viewer?url=${encodeURIComponent(startup.pdf_url)}&embedded=true`}
+                      title="Startup PDF"
+                      className="w-full h-[600px]"
+                    />
+                  </object>
+                </div>
+              )}
+            </div>
+          )}
+          {!startup.pdf_url && (
+            <div className="text-xs text-muted-foreground italic">PDF yuklanmagan</div>
           )}
 
           {startup.score !== null && <ScoreBadge score={startup.score} size="lg" />}
