@@ -128,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userId: result.userId,
         error: null,
       });
+      setIsLoading(false);
     } else {
       setSession((prev) => ({ ...prev, error: result.error }));
     }
