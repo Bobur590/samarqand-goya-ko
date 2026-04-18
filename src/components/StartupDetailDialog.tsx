@@ -46,11 +46,17 @@ export function StartupDetailDialog({ startup, onClose }: Props) {
                 </div>
                 {showPdf && (
                   <div className="rounded-lg overflow-hidden border bg-muted">
-                    <iframe
-                      src={startup.pdf_url}
-                      title="Startup PDF"
+                    <object
+                      data={startup.pdf_url}
+                      type="application/pdf"
                       className="w-full h-[600px]"
-                    />
+                    >
+                      <iframe
+                        src={`https://docs.google.com/viewer?url=${encodeURIComponent(startup.pdf_url)}&embedded=true`}
+                        title="Startup PDF"
+                        className="w-full h-[600px]"
+                      />
+                    </object>
                   </div>
                 )}
               </div>
