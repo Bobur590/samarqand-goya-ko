@@ -75,23 +75,27 @@ export const submitStartup = createServerFn({ method: "POST" })
       throw new Error(`Failed to insert startup: ${error.message}`);
     }
 
-    try {
-      const aiResult = await scoreStartupWithAI(data);
-      const scores = aiResult.scores as Record<string, number>;
-      const totalScore = Object.values(scores).reduce((sum: number, value: number) => sum + value, 0);
+    // Fire-and-forget AI scoring — don't block the user's submit response.
+    // The score/status will be updated in the background and visible on refresh.
+    void (async () => {
+      try {
+        const aiResult = await scoreStartupWithAI(data);
+        const scores = aiResult.scores as Record<string, number>;
+        const totalScore = Object.values(scores).reduce((sum: number, value: number) => sum + value, 0);
 
-      let status = "rejected";
-      if (totalScore >= 85) status = "approved";
-      else if (totalScore >= 70) status = "under_review";
-      else if (totalScore >= 50) status = "pending";
+        let status = "rejected";
+        if (totalScore >= 85) status = "approved";
+        else if (totalScore >= 70) status = "under_review";
+        else if (totalScore >= 50) status = "pending";
 
-      await supabaseAdmin
-        .from("startups")
-        .update({ score: totalScore, status, ai_feedback: aiResult })
-        .eq("id", startup.id);
-    } catch (error) {
-      console.error("AI scoring failed:", error);
-    }
+        await supabaseAdmin
+          .from("startups")
+          .update({ score: totalScore, status, ai_feedback: aiResult })
+          .eq("id", startup.id);
+      } catch (err) {
+        console.error("AI scoring failed:", err);
+      }
+    })();
 
     return { success: true as const, id: startup.id };
   });
@@ -252,21 +256,23 @@ export const getStartupDocuments = createServerFn({ method: "POST" })
 export const getDashboardStats = createServerFn({ method: "GET" }).handler(async () => {
   await requireAuth("admin");
 
-  const { data: startups } = await supabaseAdmin.from("startups").select("status, score");
-  const { data: users } = await supabaseAdmin.from("app_users").select("id").eq("role", "user");
-  const { data: docs } = await supabaseAdmin.from("startup_documents").select("id");
+  const [startupsRes, usersRes, docsRes] = await Promise.all([
+    supabaseAdmin.from("startups").select("status"),
+    supabaseAdmin.from("app_users").select("id", { count: "exact", head: true }).eq("role", "user"),
+    supabaseAdmin.from("startup_documents").select("id", { count: "exact", head: true }),
+  ]);
 
-  const all = startups || [];
+  const all = startupsRes.data || [];
 
   return {
-    totalUsers: users?.length || 0,
+    totalUsers: usersRes.count || 0,
     totalStartups: all.length,
     pending: all.filter((startup) => startup.status === "pending").length,
     underReview: all.filter((startup) => startup.status === "under_review").length,
     approved: all.filter((startup) => startup.status === "approved").length,
     rejected: all.filter((startup) => startup.status === "rejected").length,
     needsRevision: all.filter((startup) => startup.status === "needs_revision").length,
-    totalDocuments: docs?.length || 0,
+    totalDocuments: docsRes.count || 0,
   };
 });
 
