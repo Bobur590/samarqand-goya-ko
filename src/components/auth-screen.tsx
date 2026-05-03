@@ -112,7 +112,9 @@ export function AuthScreen({ mode }: { mode: AuthScreenMode }) {
       const result = await login({
         username,
         password,
-        expectedRole: copy.expectedRole,
+        // user-login sahifasi universal: admin ham, user ham kira oladi.
+        // Faqat /admin-login sahifasida adminga cheklov qo'yamiz.
+        expectedRole: mode === "admin-login" ? "admin" : undefined,
       });
 
       if (result.success) {
